@@ -6,12 +6,21 @@ import { getTelegramBotToken, verifyTelegramInitData, type TelegramUser } from "
 type UserDocument = Document & {
   _id?: ObjectId;
   telegramId?: number | string;
-  telegramUserId?: number | string;
-  telegram_id?: number | string;
+  username?: string;
+  firstName?: string;
+  dailyCalorieGoal?: number;
 };
 
-type MealDocument = Document & {
+type FoodEntryDocument = Document & {
   _id?: ObjectId;
+  userId?: ObjectId;
+  telegramId?: number;
+  foodDescription?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  createdAt?: Date;
 };
 
 type DashboardResponse = {
@@ -36,7 +45,7 @@ type DashboardResponse = {
 };
 
 const USERS_COLLECTION = process.env.MONGODB_USERS_COLLECTION ?? "users";
-const MEALS_COLLECTION = process.env.MONGODB_MEALS_COLLECTION ?? "meals";
+const FOOD_ENTRIES_COLLECTION = process.env.MONGODB_FOOD_ENTRIES_COLLECTION ?? "foodentries";
 const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
 
 function readNumber(source: unknown, paths: string[], fallback = 0) {
@@ -188,7 +197,7 @@ function getUserFilter(telegramUser: TelegramUser): Filter<UserDocument> {
   };
 }
 
-function getMealUserConditions(user: UserDocument, telegramUser: TelegramUser) {
+function getMealUserConditions(user: UserDocument, telegramUser: TelegramUser): Filter<Document>[] {
   const telegramId = telegramUser.id;
   const telegramIdString = String(telegramId);
   const objectId = user._id;
@@ -222,7 +231,7 @@ function getMealUserConditions(user: UserDocument, telegramUser: TelegramUser) {
   ];
 }
 
-function getDateConditions(start: Date, end: Date) {
+function getDateConditions(start: Date, end: Date): Filter<Document>[] {
   return [
     { createdAt: { $gte: start, $lt: end } },
     { created_at: { $gte: start, $lt: end } },
@@ -238,19 +247,21 @@ function getDateConditions(start: Date, end: Date) {
 }
 
 function getTargets(user: UserDocument) {
+  const calories = readNumber(
+    user,
+    ["dailyCalorieGoal", "calorieTarget", "dailyCalorieTarget", "dailyCalories", "nutritionGoals.calories", "goals.calories"],
+    2200
+  );
+
   return {
-    calories: readNumber(
-      user,
-      ["calorieTarget", "dailyCalorieTarget", "dailyCalories", "nutritionGoals.calories", "goals.calories"],
-      2200
-    ),
-    protein: readNumber(user, ["proteinTarget", "nutritionGoals.protein", "goals.protein"], 130),
-    fat: readNumber(user, ["fatTarget", "nutritionGoals.fat", "goals.fat"], 70),
-    carbs: readNumber(user, ["carbsTarget", "carbTarget", "nutritionGoals.carbs", "goals.carbs"], 250)
+    calories,
+    protein: readNumber(user, ["proteinTarget", "nutritionGoals.protein", "goals.protein"], Math.round((calories * 0.25) / 4)),
+    fat: readNumber(user, ["fatTarget", "nutritionGoals.fat", "goals.fat"], Math.round((calories * 0.3) / 9)),
+    carbs: readNumber(user, ["carbsTarget", "carbTarget", "nutritionGoals.carbs", "goals.carbs"], Math.round((calories * 0.45) / 4))
   };
 }
 
-function getMealNutrition(meal: MealDocument) {
+function getMealNutrition(meal: FoodEntryDocument) {
   return {
     calories: readNumber(meal, ["calories", "kcal", "nutrition.calories", "macros.calories", "totalCalories"]),
     protein: readNumber(meal, ["protein", "proteins", "nutrition.protein", "macros.protein"]),
@@ -259,19 +270,19 @@ function getMealNutrition(meal: MealDocument) {
   };
 }
 
-function getMealTitle(meal?: MealDocument) {
+function getMealTitle(meal?: FoodEntryDocument) {
   if (!meal) {
     return "Пока нет добавленной еды";
   }
 
   return readString(
     meal,
-    ["name", "title", "foodName", "description", "text", "meal", "items.0.name", "foods.0.name"],
+    ["foodDescription", "name", "title", "foodName", "description", "text", "meal", "items.0.name", "foods.0.name"],
     "Еда без названия"
   );
 }
 
-function formatMealTime(meal?: MealDocument) {
+function formatMealTime(meal?: FoodEntryDocument) {
   const date = meal ? readDate(meal) : undefined;
   if (!date) {
     return "";
@@ -314,8 +325,8 @@ export async function POST(request: Request) {
   }
 
   const { start, end } = getTodayRange(TIME_ZONE);
-  const meals = await db
-    .collection<MealDocument>(MEALS_COLLECTION)
+  const foodEntries = await db
+    .collection<Document>(FOOD_ENTRIES_COLLECTION)
     .find({
       $and: [
         { $or: getMealUserConditions(registeredUser, telegramUser) },
@@ -324,11 +335,11 @@ export async function POST(request: Request) {
     })
     .sort({ createdAt: -1, date: -1, timestamp: -1 })
     .limit(200)
-    .toArray();
+    .toArray() as FoodEntryDocument[];
 
-  const totals = meals.reduce(
-    (sum, meal) => {
-      const nutrition = getMealNutrition(meal);
+  const totals = foodEntries.reduce<{ calories: number; protein: number; fat: number; carbs: number }>(
+    (sum, entry) => {
+      const nutrition = getMealNutrition(entry);
 
       return {
         calories: sum.calories + nutrition.calories,
@@ -340,8 +351,8 @@ export async function POST(request: Request) {
     { calories: 0, protein: 0, fat: 0, carbs: 0 }
   );
   const targets = getTargets(registeredUser);
-  const lastMeal = meals.reduce<MealDocument | undefined>((latest, meal) => {
-    const mealDate = readDate(meal);
+  const lastFoodEntry = foodEntries.reduce<FoodEntryDocument | undefined>((latest, entry) => {
+    const mealDate = readDate(entry);
     const latestDate = latest ? readDate(latest) : undefined;
 
     if (!mealDate) {
@@ -349,7 +360,7 @@ export async function POST(request: Request) {
     }
 
     if (!latestDate || mealDate.getTime() > latestDate.getTime()) {
-      return meal;
+      return entry;
     }
 
     return latest;
@@ -365,9 +376,9 @@ export async function POST(request: Request) {
     day: {
       calories: Math.round(totals.calories),
       calorieTarget: Math.round(targets.calories),
-      meals: meals.length,
-      lastFood: getMealTitle(lastMeal),
-      lastFoodTime: formatMealTime(lastMeal)
+      meals: foodEntries.length,
+      lastFood: getMealTitle(lastFoodEntry),
+      lastFoodTime: formatMealTime(lastFoodEntry)
     },
     macros: [
       { id: "protein", current: Math.round(totals.protein), target: Math.round(targets.protein) },
