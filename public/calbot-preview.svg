@@ -1,0 +1,80 @@
+<svg width="1120" height="820" viewBox="0 0 1120 820" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">CalBot Telegram bot inside a phone</title>
+  <desc id="desc">A phone mockup showing a Telegram chat with CalBot analyzing a meal photo and returning calories and macros.</desc>
+
+  <rect width="1120" height="820" rx="36" fill="#F7F5F1"/>
+  <circle cx="218" cy="204" r="116" fill="#DDEBFF"/>
+  <circle cx="904" cy="636" r="128" fill="#F4E4BE"/>
+  <rect x="92" y="676" width="936" height="22" rx="11" fill="#E3DDD4"/>
+
+  <g transform="translate(342 48)">
+    <rect x="0" y="0" width="436" height="724" rx="64" fill="#161412"/>
+    <rect x="14" y="14" width="408" height="696" rx="52" fill="#2B2A2A"/>
+    <rect x="31" y="32" width="374" height="660" rx="42" fill="#F6F7F9"/>
+    <rect x="166" y="20" width="104" height="25" rx="13" fill="#161412"/>
+    <circle cx="288" cy="32" r="5" fill="#4F4D4A"/>
+
+    <clipPath id="screen">
+      <rect x="31" y="32" width="374" height="660" rx="42"/>
+    </clipPath>
+
+    <g clip-path="url(#screen)">
+      <rect x="31" y="32" width="374" height="660" fill="#E9EEF5"/>
+
+      <rect x="31" y="32" width="374" height="88" fill="#2AABEE"/>
+      <circle cx="70" cy="82" r="24" fill="#FFFFFF"/>
+      <path d="M58 82L84 69L78 96L70 88L64 94L66 85L58 82Z" fill="#2AABEE"/>
+      <text x="112" y="76" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="22" font-weight="800">CalBot</text>
+      <text x="112" y="101" fill="#DFF4FF" font-family="Arial, sans-serif" font-size="14">бот для подсчета калорий</text>
+      <circle cx="352" cy="82" r="4" fill="#DFF4FF"/>
+      <circle cx="368" cy="82" r="4" fill="#DFF4FF"/>
+      <circle cx="384" cy="82" r="4" fill="#DFF4FF"/>
+
+      <rect x="63" y="145" width="218" height="47" rx="18" fill="#FFFFFF"/>
+      <text x="85" y="174" fill="#2F2A25" font-family="Arial, sans-serif" font-size="16" font-weight="700">Привет! Отправь фото еды</text>
+
+      <rect x="122" y="214" width="248" height="184" rx="24" fill="#D4E7FF"/>
+      <rect x="142" y="234" width="208" height="116" rx="18" fill="#F8E0B2"/>
+      <circle cx="210" cy="286" r="36" fill="#D8814F"/>
+      <path d="M163 313C209 337 282 328 330 296C277 305 218 303 163 313Z" fill="#6E8B52"/>
+      <path d="M177 265C214 239 288 241 324 276C274 266 223 269 177 265Z" fill="#F4C75D"/>
+      <rect x="142" y="365" width="124" height="13" rx="7" fill="#FFFFFF"/>
+      <rect x="282" y="365" width="48" height="13" rx="7" fill="#A8C8EE"/>
+      <path d="M351 398L370 398L370 379C366 389 360 395 351 398Z" fill="#D4E7FF"/>
+
+      <rect x="62" y="422" width="288" height="142" rx="22" fill="#FFFFFF"/>
+      <text x="87" y="455" fill="#2F2A25" font-family="Arial, sans-serif" font-size="17" font-weight="800">Готово: паста с курицей</text>
+      <text x="87" y="484" fill="#756F66" font-family="Arial, sans-serif" font-size="15">Оценка по фото</text>
+
+      <rect x="87" y="508" width="75" height="38" rx="12" fill="#F7F5F1"/>
+      <text x="103" y="532" fill="#2F2A25" font-family="Arial, sans-serif" font-size="18" font-weight="800">642</text>
+      <text x="87" y="567" fill="#756F66" font-family="Arial, sans-serif" font-size="13">ккал</text>
+
+      <rect x="181" y="508" width="48" height="38" rx="12" fill="#E8F3EA"/>
+      <text x="194" y="532" fill="#2F2A25" font-family="Arial, sans-serif" font-size="17" font-weight="800">38</text>
+      <text x="181" y="567" fill="#756F66" font-family="Arial, sans-serif" font-size="13">белки</text>
+
+      <rect x="248" y="508" width="48" height="38" rx="12" fill="#FFF4D8"/>
+      <text x="261" y="532" fill="#2F2A25" font-family="Arial, sans-serif" font-size="17" font-weight="800">71</text>
+      <text x="248" y="567" fill="#756F66" font-family="Arial, sans-serif" font-size="13">угл.</text>
+
+      <rect x="62" y="588" width="160" height="44" rx="17" fill="#FFFFFF"/>
+      <text x="84" y="616" fill="#2F2A25" font-family="Arial, sans-serif" font-size="15" font-weight="700">/stats за сегодня</text>
+
+      <rect x="31" y="636" width="374" height="56" fill="#FFFFFF"/>
+      <rect x="61" y="649" width="260" height="30" rx="15" fill="#F0F2F5"/>
+      <text x="82" y="669" fill="#8A8F99" font-family="Arial, sans-serif" font-size="13">Сообщение</text>
+      <circle cx="352" cy="664" r="15" fill="#2AABEE"/>
+      <path d="M345 664L360 656L356 672L351 667L348 671L349 666L345 664Z" fill="#FFFFFF"/>
+    </g>
+  </g>
+
+  <rect x="126" y="154" width="238" height="108" rx="24" fill="#FFFFFF" stroke="#D9D3CB" stroke-width="2"/>
+  <text x="154" y="195" fill="#2F2A25" font-family="Arial, sans-serif" font-size="22" font-weight="800">Telegram-бот</text>
+  <text x="154" y="226" fill="#756F66" font-family="Arial, sans-serif" font-size="16">работает прямо в чате</text>
+
+  <rect x="748" y="502" width="258" height="132" rx="24" fill="#FFFFFF" stroke="#D9D3CB" stroke-width="2"/>
+  <text x="778" y="544" fill="#2F2A25" font-family="Arial, sans-serif" font-size="20" font-weight="800">Ответ за секунды</text>
+  <text x="778" y="576" fill="#756F66" font-family="Arial, sans-serif" font-size="16">калории, БЖУ и</text>
+  <text x="778" y="600" fill="#756F66" font-family="Arial, sans-serif" font-size="16">статистика питания</text>
+</svg>
