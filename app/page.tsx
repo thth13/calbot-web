@@ -108,8 +108,15 @@ export default function Home() {
       </section>
 
       <footer>
-        <span>CalBot</span>
-        <span>AI calorie tracker for Telegram</span>
+        <div>
+          <span>CalBot</span>
+          <span>AI calorie tracker for Telegram</span>
+        </div>
+        <nav aria-label="Legal links">
+          <a href="/terms">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/refund">Refund</a>
+        </nav>
       </footer>
     </main>
   );
