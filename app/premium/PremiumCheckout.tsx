@@ -52,6 +52,7 @@ declare global {
         ready?: () => void;
         expand?: () => void;
         close?: () => void;
+        initData?: string;
         initDataUnsafe?: {
           user?: {
             id?: number;
@@ -92,6 +93,7 @@ const benefits = [
 export default function PremiumCheckout() {
   const [selectedPlanId, setSelectedPlanId] = useState<(typeof plans)[number]["id"]>("yearly");
   const [isPaddleReady, setIsPaddleReady] = useState(false);
+  const [isTelegramSession, setIsTelegramSession] = useState(true);
   const [checkoutState, setCheckoutState] = useState<"idle" | "opening" | "completed">("idle");
   const [checkoutError, setCheckoutError] = useState("");
 
@@ -103,8 +105,17 @@ export default function PremiumCheckout() {
   const isConfigured = Boolean(paddleToken && selectedPlan.priceId);
 
   useEffect(() => {
-    window.Telegram?.WebApp?.ready?.();
-    window.Telegram?.WebApp?.expand?.();
+    const webApp = window.Telegram?.WebApp;
+    const hasInitData = Boolean(webApp?.initData);
+
+    setIsTelegramSession(hasInitData);
+    if (!hasInitData) {
+      setCheckoutError("Open this page from the CalBot Telegram bot to buy Premium.");
+      return;
+    }
+
+    webApp?.ready?.();
+    webApp?.expand?.();
   }, []);
 
   function initializePaddle() {
@@ -135,7 +146,35 @@ export default function PremiumCheckout() {
     setIsPaddleReady(true);
   }
 
-  function openCheckout() {
+  async function verifyTelegramUser() {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) {
+      throw new Error("Open this page from Telegram to continue.");
+    }
+
+    const response = await fetch("/api/telegram/verify-init-data", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ initData })
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not verify your Telegram session. Please reopen the page from the bot.");
+    }
+
+    return (await response.json()) as {
+      user: {
+        id: number;
+        username?: string;
+        firstName?: string;
+        lastName?: string;
+      };
+    };
+  }
+
+  async function openCheckout() {
     if (!window.Paddle || !selectedPlan.priceId) {
       setCheckoutError("The payment form is not configured yet. Please try again later.");
       return;
@@ -144,7 +183,15 @@ export default function PremiumCheckout() {
     setCheckoutError("");
     setCheckoutState("opening");
 
-    const telegramUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    let telegramUser;
+    try {
+      const verified = await verifyTelegramUser();
+      telegramUser = verified.user;
+    } catch (error) {
+      setCheckoutState("idle");
+      setCheckoutError(error instanceof Error ? error.message : "Telegram verification failed.");
+      return;
+    }
 
     window.Paddle.Checkout.open({
       items: [
@@ -156,7 +203,8 @@ export default function PremiumCheckout() {
       customData: {
         plan: selectedPlan.id,
         source: "telegram_webview",
-        ...(telegramUserId ? { telegramUserId: String(telegramUserId) } : {})
+        telegramUserId: String(telegramUser.id),
+        ...(telegramUser.username ? { telegramUsername: telegramUser.username } : {})
       },
       settings: {
         displayMode: "overlay",
@@ -216,7 +264,7 @@ export default function PremiumCheckout() {
 
           <button
             className="primaryAction checkoutButton"
-            disabled={!isPaddleReady || !isConfigured || checkoutState === "opening"}
+            disabled={!isTelegramSession || !isPaddleReady || !isConfigured || checkoutState === "opening"}
             onClick={openCheckout}
             type="button"
           >
