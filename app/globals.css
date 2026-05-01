@@ -716,11 +716,14 @@ footer nav a:hover {
 
 .quickActions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
 .quickAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   padding: 0 10px;
   border: 1px solid #191714;
@@ -1255,6 +1258,246 @@ footer nav a:hover {
   color: var(--green);
 }
 
+.statsActions {
+  grid-template-columns: 1fr;
+}
+
+.diaryPage {
+  min-height: 100vh;
+  padding: 18px 0 28px;
+  background: #f6f7f2;
+}
+
+.diaryShell {
+  display: grid;
+  gap: 14px;
+  width: min(720px, calc(100% - 28px));
+  margin: 0 auto;
+}
+
+.diaryHero,
+.diaryDay {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+}
+
+.diaryHero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+}
+
+.diaryHero h1 {
+  margin-bottom: 0;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.diaryTotal {
+  display: grid;
+  place-items: center;
+  min-width: 138px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf0;
+  text-align: center;
+}
+
+.diaryTotal span,
+.diaryDayHeader span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.diaryTotal strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.diaryDays,
+.foodList {
+  display: grid;
+  gap: 12px;
+}
+
+.diaryDay {
+  overflow: hidden;
+}
+
+.diaryDayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: #fffaf0;
+}
+
+.diaryDayHeader div {
+  display: grid;
+  gap: 4px;
+}
+
+.diaryDayHeader strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.diaryDayHeader p {
+  margin-bottom: 0;
+  color: var(--green);
+  font-size: 16px;
+  font-weight: 850;
+  text-align: right;
+}
+
+.dayFoodList {
+  padding: 14px;
+}
+
+.foodItem {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) minmax(146px, auto);
+  gap: 12px;
+  align-items: center;
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+}
+
+.foodItem.editing {
+  align-items: start;
+}
+
+.foodTime {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.foodInfo {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.foodInfo strong {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.foodInfo p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.foodEditForm {
+  display: grid;
+  gap: 8px;
+}
+
+.foodEditForm label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.foodEditForm label span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.foodEditForm input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fffaf0;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.foodEditGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.foodActions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.foodActions button {
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: #fffaf0;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.foodActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.foodActions button:nth-child(2) {
+  background: #fff0ed;
+  color: #94362a;
+}
+
+.foodActions button:active {
+  transform: translateY(1px);
+}
+
+.diaryActionError {
+  margin-bottom: 0;
+  padding: 12px 14px;
+  border: 1px solid #d99686;
+  border-radius: 8px;
+  background: #fff0ed;
+  color: #94362a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 @media (max-width: 960px) {
   .hero,
   .splitSection {
@@ -1333,11 +1576,13 @@ footer nav a:hover {
     width: min(100% - 24px, 520px);
   }
 
-  .statsPage {
+  .statsPage,
+  .diaryPage {
     padding-top: 12px;
   }
 
-  .statsShell {
+  .statsShell,
+  .diaryShell {
     width: min(100% - 24px, 640px);
   }
 
@@ -1345,7 +1590,8 @@ footer nav a:hover {
     padding: 15px;
   }
 
-  .statsHero {
+  .statsHero,
+  .diaryHero {
     padding: 15px;
   }
 
@@ -1353,7 +1599,8 @@ footer nav a:hover {
     font-size: 29px;
   }
 
-  .statsHero h1 {
+  .statsHero h1,
+  .diaryHero h1 {
     font-size: 29px;
   }
 
@@ -1371,6 +1618,10 @@ footer nav a:hover {
 
   .macroCard {
     min-height: 0;
+  }
+
+  .quickActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .averageGrid {
@@ -1404,6 +1655,38 @@ footer nav a:hover {
 
   .comparisonRow p {
     display: none;
+  }
+
+  .diaryHero {
+    flex-direction: column;
+  }
+
+  .diaryTotal {
+    place-items: start;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .diaryDayHeader {
+    align-items: flex-start;
+  }
+
+  .dayFoodList {
+    padding: 10px;
+  }
+
+  .foodItem {
+    grid-template-columns: 62px minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .foodActions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .foodEditGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .premiumPage {

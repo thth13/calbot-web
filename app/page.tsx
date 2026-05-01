@@ -87,9 +87,7 @@ const macroMeta = {
 } as const;
 
 const quickActions = [
-  { id: "add_food", label: "+ Food" },
-  { id: "scan_food", label: "Scan" },
-  { id: "open_history", label: "History" }
+  { id: "scan_food", label: "Scan" }
 ];
 
 const BOT_URL = "https://t.me/caldetect_bot";
@@ -277,12 +275,6 @@ function Dashboard({ data }: { data: DashboardData }) {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
-          <nav className="dashboardNav" aria-label="Dashboard navigation">
-            <a href="/stats">Stats</a>
-            <a className="dashboardPremium" href="/premium">
-              Premium
-            </a>
-          </nav>
         </header>
 
         <div className="dashboardHero">
@@ -347,6 +339,12 @@ function Dashboard({ data }: { data: DashboardData }) {
         </section>
 
         <section className="quickActions" aria-label="Quick actions">
+          <a className="quickAction" href="/stats">
+            Stats
+          </a>
+          <a className="quickAction" href="/history">
+            History
+          </a>
           {quickActions.map((action) => (
             <button
               className="quickAction"
