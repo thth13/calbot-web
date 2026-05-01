@@ -33,8 +33,10 @@ export default function TermsOfServicePage() {
           <p>
             These Terms of Service (&quot;Terms&quot;) govern your access to and use of
             the CalBot website, Telegram bot, subscriptions, and related services
-            (&quot;Service&quot;). By opening the bot, using the website, creating a
-            subscription, or otherwise using the Service, you agree to these Terms.
+            (&quot;Service&quot;) provided by Pomo Cowork (&quot;Pomo Cowork&quot;,
+            &quot;CalBot&quot;, &quot;we&quot;, &quot;us&quot;). By opening the bot, using the
+            website, creating a subscription, or otherwise using the Service, you agree
+            to these Terms.
           </p>
 
           <div>
@@ -106,7 +108,8 @@ export default function TermsOfServicePage() {
             <p>
               Paid plans may be offered for additional limits, features, or analytics.
               Prices, renewal dates, taxes, payment methods, and plan details are shown
-              before you complete a purchase.
+              before you complete a purchase. Purchases are processed by Paddle as
+              merchant of record and authorized reseller.
             </p>
             <ul>
               <li>Auto-renewal: subscriptions renew automatically unless cancelled before renewal.</li>
@@ -120,13 +123,13 @@ export default function TermsOfServicePage() {
           <div>
             <h2>8. Refunds</h2>
             <p>
-              Fees are generally non-refundable except where required by law. If you
-              believe a billing error occurred, contact us promptly. For details, see
-              our{" "}
+              Refunds, statutory withdrawal rights, refund requests, and
+              cancellation-related billing handling are governed by Paddle&apos;s Buyer
+              Terms and Refund Policy. For details, see our{" "}
               <Link href="/refund">
                 Refund Policy
-              </Link>
-              , which is incorporated by reference.
+              </Link>{" "}
+              and Paddle&apos;s terms presented at checkout.
             </p>
           </div>
 

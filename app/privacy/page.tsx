@@ -31,10 +31,10 @@ export default function PrivacyPolicyPage() {
 
         <section>
           <p>
-            This Privacy Policy explains how CalBot (&quot;CalBot&quot;, &quot;we&quot;,
-            &quot;us&quot;) collects, uses, shares, and protects information when you
-            use our website, Telegram bot, subscriptions, and related services
-            (collectively, the &quot;Service&quot;).
+            This Privacy Policy explains how Pomo Cowork, operating CalBot
+            (&quot;CalBot&quot;, &quot;we&quot;, &quot;us&quot;), collects, uses, shares, and protects
+            information when you use our website, Telegram bot, subscriptions, and
+            related services (collectively, the &quot;Service&quot;).
           </p>
 
           <div>
