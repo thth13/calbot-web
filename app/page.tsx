@@ -9,6 +9,20 @@ type TelegramUser = {
   last_name?: string;
 };
 
+type TelegramWebApp = {
+  ready?: () => void;
+  expand?: () => void;
+  close?: () => void;
+  sendData?: (data: string) => void;
+  HapticFeedback?: {
+    impactOccurred?: (style: "light" | "medium" | "heavy") => void;
+  };
+  initData?: string;
+  initDataUnsafe?: {
+    user?: TelegramUser;
+  };
+};
+
 type DashboardData = {
   user: {
     id: number;
@@ -33,19 +47,7 @@ type DashboardData = {
 declare global {
   interface Window {
     Telegram?: {
-      WebApp?: {
-        ready?: () => void;
-        expand?: () => void;
-        close?: () => void;
-        sendData?: (data: string) => void;
-        HapticFeedback?: {
-          impactOccurred?: (style: "light" | "medium" | "heavy") => void;
-        };
-        initData?: string;
-        initDataUnsafe?: {
-          user?: TelegramUser;
-        };
-      };
+      WebApp?: TelegramWebApp;
     };
   }
 }
@@ -107,6 +109,29 @@ function getDisplayName(user?: TelegramUser) {
 
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
   return fullName || (user.username ? `@${user.username}` : "Ваш день");
+}
+
+function waitForTelegramWebApp(timeoutMs = 1500) {
+  return new Promise<TelegramWebApp | undefined>((resolve) => {
+    const startedAt = Date.now();
+
+    function check() {
+      const webApp = window.Telegram?.WebApp;
+      if (webApp || Date.now() - startedAt >= timeoutMs) {
+        resolve(webApp);
+        return;
+      }
+
+      window.setTimeout(check, 50);
+    }
+
+    if (document.readyState === "loading") {
+      window.addEventListener("DOMContentLoaded", check, { once: true });
+      return;
+    }
+
+    check();
+  });
 }
 
 function Landing() {
@@ -347,10 +372,12 @@ export default function Home() {
     let isActive = true;
 
     async function resolveInitialView() {
-      const webApp = window.Telegram?.WebApp;
+      const webApp = await waitForTelegramWebApp();
 
       if (!webApp?.initData) {
-        setView("landing");
+        if (isActive) {
+          setView("landing");
+        }
         return;
       }
 
