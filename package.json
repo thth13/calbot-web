@@ -11,6 +11,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "mongodb": "^7.2.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

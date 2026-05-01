@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CalBot - AI calorie tracker in Telegram",
   description:
-    "CalBot landing page: analyze food from photos or descriptions, track calories, macros, and nutrition stats.",
+    "CalBot landing page and Telegram dashboard: analyze food, track calories, macros, meals, and nutrition stats.",
   openGraph: {
     title: "CalBot - AI calorie tracker in Telegram",
     description:

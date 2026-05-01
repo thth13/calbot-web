@@ -36,6 +36,10 @@ main {
   min-height: 100vh;
 }
 
+.routeLoader {
+  background: var(--bg);
+}
+
 .nav {
   position: sticky;
   top: 0;
@@ -489,6 +493,244 @@ footer nav a:hover {
   color: var(--ink);
 }
 
+.dashboardPage {
+  min-height: 100vh;
+  padding: 18px 0 28px;
+  background: #f6f7f2;
+}
+
+.dashboardShell {
+  display: grid;
+  gap: 14px;
+  width: min(520px, calc(100% - 28px));
+  margin: 0 auto;
+}
+
+.dashboardTop,
+.dashboardHero,
+.caloriePanel,
+.macroCard,
+.lastFoodPanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+}
+
+.dashboardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+}
+
+.dashboardPremium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.dashboardHero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+}
+
+.dashboardHero h1 {
+  margin-bottom: 0;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.mealCounter {
+  display: grid;
+  place-items: center;
+  min-width: 104px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef6f0;
+  text-align: center;
+}
+
+.mealCounter strong {
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.mealCounter span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.caloriePanel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  background: #fffaf0;
+  box-shadow: 6px 6px 0 #ded7cd;
+}
+
+.calorieSummary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
+  gap: 14px;
+  align-items: end;
+}
+
+.calorieSummary div {
+  display: grid;
+  gap: 6px;
+}
+
+.calorieSummary span,
+.lastFoodPanel span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.calorieSummary strong {
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.calorieSummary div:last-child {
+  text-align: right;
+}
+
+.calorieSummary div:last-child strong {
+  color: var(--green);
+  font-size: 22px;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #ece6dc;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ink);
+}
+
+.macroGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.macroCard {
+  display: grid;
+  gap: 10px;
+  min-height: 128px;
+  padding: 14px;
+}
+
+.macroCardTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.macroCardTop span {
+  font-size: 22px;
+}
+
+.macroCardTop strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.macroCard p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 760;
+  line-height: 1.25;
+}
+
+.compactTrack {
+  height: 9px;
+  align-self: end;
+}
+
+.lastFoodPanel {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+}
+
+.lastFoodPanel strong {
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.lastFoodPanel p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quickAction {
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1px solid #191714;
+  border-radius: 8px;
+  background: var(--paper-strong);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.quickAction:first-child {
+  background: var(--ink);
+  color: #fff;
+}
+
+.quickAction:active {
+  transform: translateY(1px);
+}
+
+.dashboardHint {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #96c89d;
+  border-radius: 8px;
+  background: #edf9ef;
+  color: #2f6f3c;
+  font-size: 13px;
+}
+
 .legalPage {
   width: min(920px, calc(100% - 32px));
   margin: 0 auto;
@@ -802,6 +1044,38 @@ footer nav a:hover {
 
   .billingOptions {
     grid-template-columns: 1fr;
+  }
+
+  .dashboardPage {
+    padding-top: 12px;
+  }
+
+  .dashboardShell {
+    width: min(100% - 24px, 520px);
+  }
+
+  .dashboardHero {
+    padding: 15px;
+  }
+
+  .dashboardHero h1 {
+    font-size: 29px;
+  }
+
+  .calorieSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .calorieSummary div:last-child {
+    text-align: left;
+  }
+
+  .macroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .macroCard {
+    min-height: 0;
   }
 
   .premiumPage {

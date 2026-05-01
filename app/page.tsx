@@ -1,3 +1,55 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+type TelegramUser = {
+  id?: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+};
+
+type DashboardData = {
+  user: {
+    id: number;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  day: {
+    calories: number;
+    calorieTarget: number;
+    meals: number;
+    lastFood: string;
+    lastFoodTime: string;
+  };
+  macros: Array<{
+    id: "protein" | "fat" | "carbs";
+    current: number;
+    target: number;
+  }>;
+};
+
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        ready?: () => void;
+        expand?: () => void;
+        close?: () => void;
+        sendData?: (data: string) => void;
+        HapticFeedback?: {
+          impactOccurred?: (style: "light" | "medium" | "heavy") => void;
+        };
+        initData?: string;
+        initDataUnsafe?: {
+          user?: TelegramUser;
+        };
+      };
+    };
+  }
+}
+
 const features = [
   ["Photo or text", "Send a meal photo or describe what you ate in plain language."],
   ["Calories and macros", "Get calories, protein, fat, carbs, and the estimate confidence."],
@@ -11,9 +63,53 @@ const steps = [
   "Get the estimate and save your day"
 ];
 
+const macroMeta = {
+  protein: {
+    icon: "🥩",
+    label: "Белки",
+    unit: "г",
+    color: "#d7664f"
+  },
+  fat: {
+    icon: "🥑",
+    label: "Жиры",
+    unit: "г",
+    color: "#5aa469"
+  },
+  carbs: {
+    icon: "🍚",
+    label: "Углеводы",
+    unit: "г",
+    color: "#c89432"
+  }
+} as const;
+
+const quickActions = [
+  { id: "add_food", label: "+ Еда" },
+  { id: "scan_food", label: "Сканировать" },
+  { id: "open_history", label: "История" }
+];
+
 const BOT_URL = "https://t.me/caldetect_bot";
 
-export default function Home() {
+function percent(current: number, target: number) {
+  if (target <= 0) {
+    return 0;
+  }
+
+  return Math.min(100, Math.round((current / target) * 100));
+}
+
+function getDisplayName(user?: TelegramUser) {
+  if (!user) {
+    return "Ваш день";
+  }
+
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+  return fullName || (user.username ? `@${user.username}` : "Ваш день");
+}
+
+function Landing() {
   return (
     <main>
       <header className="nav">
@@ -122,4 +218,186 @@ export default function Home() {
       </footer>
     </main>
   );
+}
+
+function Dashboard({ data }: { data: DashboardData }) {
+  const [lastAction, setLastAction] = useState("");
+  const day = data.day;
+  const caloriesLeft = Math.max(day.calorieTarget - day.calories, 0);
+  const calorieProgress = percent(day.calories, day.calorieTarget);
+  const user = {
+    id: data.user.id,
+    username: data.user.username,
+    first_name: data.user.firstName,
+    last_name: data.user.lastName
+  };
+  const userTitle = getDisplayName(user);
+
+  function handleQuickAction(actionId: string) {
+    const webApp = window.Telegram?.WebApp;
+
+    webApp?.HapticFeedback?.impactOccurred?.("light");
+    setLastAction(actionId);
+
+    if (webApp?.initData && webApp.sendData) {
+      webApp.sendData(JSON.stringify({ action: actionId }));
+    }
+  }
+
+  return (
+    <main className="dashboardPage">
+      <section className="dashboardShell" aria-labelledby="dashboard-title">
+        <header className="dashboardTop">
+          <a className="brand" href="/" aria-label="CalBot">
+            <span className="brandMark">C</span>
+            <span>CalBot</span>
+          </a>
+          <a className="dashboardPremium" href="/premium">
+            Premium
+          </a>
+        </header>
+
+        <div className="dashboardHero">
+          <div>
+            <p className="eyebrow">Сегодня</p>
+            <h1 id="dashboard-title">{userTitle}</h1>
+          </div>
+          <div className="mealCounter" aria-label="Количество приемов пищи">
+            <strong>{day.meals}</strong>
+            <span>приема пищи</span>
+          </div>
+        </div>
+
+        <section className="caloriePanel" aria-label="Калории за сегодня">
+          <div className="calorieSummary">
+            <div>
+              <span>🔥 Калории</span>
+              <strong>
+                {day.calories} / {day.calorieTarget} kcal
+              </strong>
+            </div>
+            <div>
+              <span>Остаток</span>
+              <strong>{caloriesLeft} kcal</strong>
+            </div>
+          </div>
+
+          <div className="progressTrack" aria-label={`Калории выполнены на ${calorieProgress}%`}>
+            <span style={{ width: `${calorieProgress}%` }} />
+          </div>
+        </section>
+
+        <section className="macroGrid" aria-label="Белки жиры углеводы">
+          {data.macros.map((macro) => {
+            const meta = macroMeta[macro.id];
+            const macroProgress = percent(macro.current, macro.target);
+
+            return (
+              <article className="macroCard" key={macro.id}>
+                <div className="macroCardTop">
+                  <span>{meta.icon}</span>
+                  <strong>{meta.label}</strong>
+                </div>
+                <p>
+                  {macro.current} / {macro.target} {meta.unit}
+                </p>
+                <div
+                  className="progressTrack compactTrack"
+                  aria-label={`${meta.label} выполнены на ${macroProgress}%`}
+                >
+                  <span style={{ width: `${macroProgress}%`, background: meta.color }} />
+                </div>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className="lastFoodPanel" aria-label="Последняя добавленная еда">
+          <span>Последняя добавленная еда</span>
+          <strong>{day.lastFood}</strong>
+          <p>{day.lastFoodTime}</p>
+        </section>
+
+        <section className="quickActions" aria-label="Быстрые действия">
+          {quickActions.map((action) => (
+            <button
+              className="quickAction"
+              key={action.id}
+              onClick={() => handleQuickAction(action.id)}
+              type="button"
+            >
+              {action.label}
+            </button>
+          ))}
+        </section>
+
+        {lastAction ? (
+          <p className="dashboardHint">Действие отправлено: {lastAction}</p>
+        ) : null}
+      </section>
+    </main>
+  );
+}
+
+export default function Home() {
+  const [view, setView] = useState<"checking" | "landing" | "dashboard">("checking");
+  const [dashboardData, setDashboardData] = useState<DashboardData | undefined>();
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function resolveInitialView() {
+      const webApp = window.Telegram?.WebApp;
+
+      if (!webApp?.initData) {
+        setView("landing");
+        return;
+      }
+
+      webApp.ready?.();
+      webApp.expand?.();
+
+      try {
+        const response = await fetch("/api/dashboard", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify({ initData: webApp.initData })
+        });
+
+        if (!isActive) {
+          return;
+        }
+
+        if (!response.ok) {
+          setView("landing");
+          return;
+        }
+
+        setDashboardData((await response.json()) as DashboardData);
+        setView("dashboard");
+      } catch {
+        if (isActive) {
+          setView("landing");
+        }
+      }
+    }
+
+    resolveInitialView();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  if (view === "checking") {
+    return <main className="routeLoader" aria-label="Loading" />;
+  }
+
+  if (view === "dashboard" && dashboardData) {
+    return <Dashboard data={dashboardData} />;
+  }
+
+  return <Landing />;
 }

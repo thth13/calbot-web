@@ -52,10 +52,17 @@ declare global {
         ready?: () => void;
         expand?: () => void;
         close?: () => void;
+        sendData?: (data: string) => void;
+        HapticFeedback?: {
+          impactOccurred?: (style: "light" | "medium" | "heavy") => void;
+        };
         initData?: string;
         initDataUnsafe?: {
           user?: {
             id?: number;
+            username?: string;
+            first_name?: string;
+            last_name?: string;
           };
         };
       };
