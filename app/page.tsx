@@ -11,6 +11,8 @@ const steps = [
   "Get the estimate and save your day"
 ];
 
+const BOT_URL = "https://t.me/caldetect_bot";
+
 export default function Home() {
   return (
     <main>
@@ -35,7 +37,7 @@ export default function Home() {
             calories, protein, fat, carbs, and confidence.
           </p>
           <div className="actions">
-            <a className="primaryAction" href="https://t.me/" target="_blank" rel="noreferrer">
+            <a className="primaryAction" href={BOT_URL} target="_blank" rel="noreferrer">
               Open the bot
             </a>
             <a className="secondaryAction" href="#features">
@@ -89,7 +91,7 @@ export default function Home() {
             <span>Yearly</span>
             <strong>$99</strong>
           </div>
-          <a className="primaryAction full" href="https://t.me/" target="_blank" rel="noreferrer">
+          <a className="primaryAction full" href={BOT_URL} target="_blank" rel="noreferrer">
             Choose a plan in Telegram
           </a>
         </div>
