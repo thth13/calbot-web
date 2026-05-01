@@ -537,6 +537,27 @@ footer nav a:hover {
   font-weight: 760;
 }
 
+.dashboardNav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dashboardNav a:not(.dashboardPremium) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 760;
+}
+
 .dashboardHero {
   display: flex;
   align-items: stretch;
@@ -976,6 +997,264 @@ footer nav a:hover {
   color: #94362a;
 }
 
+.statsPage {
+  min-height: 100vh;
+  padding: 18px 0 28px;
+  background: #f6f7f2;
+}
+
+.statsShell {
+  display: grid;
+  gap: 14px;
+  width: min(640px, calc(100% - 28px));
+  margin: 0 auto;
+}
+
+.statsHero,
+.statsChartPanel,
+.statCard,
+.rangeCard,
+.comparisonPanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+}
+
+.statsHero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+}
+
+.statsHero h1 {
+  margin-bottom: 0;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.statsTarget {
+  display: grid;
+  place-items: center;
+  min-width: 128px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef6f0;
+  text-align: center;
+}
+
+.statsTarget span,
+.statsPanelHeader span,
+.statCard span,
+.rangeCard span,
+.comparisonRow span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.statsTarget strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.statsChartPanel {
+  display: grid;
+  gap: 20px;
+  padding: 18px;
+  background: #fffaf0;
+  box-shadow: 6px 6px 0 #ded7cd;
+}
+
+.statsPanelHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.statsPanelHeader div {
+  display: grid;
+  gap: 6px;
+}
+
+.statsPanelHeader strong {
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.statsPanelHeader p {
+  margin-bottom: 0;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.calorieChart {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: end;
+  gap: 9px;
+  min-height: 236px;
+  padding-top: 10px;
+}
+
+.targetLine {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-top: 2px dashed #7b9e6b;
+  pointer-events: none;
+}
+
+.targetLine::after {
+  content: "Goal";
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #eef6f0;
+  color: #3d6f43;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.chartDay {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 7px;
+  min-width: 0;
+  height: 226px;
+  text-align: center;
+}
+
+.chartBarWrap {
+  display: flex;
+  align-items: end;
+  min-height: 158px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--paper-strong) 74%, #ece6dc);
+  overflow: hidden;
+}
+
+.chartBar {
+  display: block;
+  width: 100%;
+  border-radius: 7px 7px 0 0;
+  background: var(--green);
+}
+
+.chartBar.over {
+  background: #d7664f;
+}
+
+.chartBar.under {
+  background: var(--gold);
+}
+
+.chartDay strong {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.chartDay > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.averageGrid,
+.rangeGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.averageGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rangeGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.statCard,
+.rangeCard {
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  padding: 14px;
+}
+
+.statCard strong {
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.rangeCard strong {
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.statCard p,
+.rangeCard p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.comparisonPanel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.comparisonRows {
+  display: grid;
+  gap: 8px;
+}
+
+.comparisonRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(74px, auto) minmax(72px, auto) minmax(74px, auto);
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.comparisonRow strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.comparisonRow p,
+.comparisonRow em {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.comparisonRow em {
+  justify-self: end;
+  color: var(--green);
+}
+
 @media (max-width: 960px) {
   .hero,
   .splitSection {
@@ -1054,11 +1333,27 @@ footer nav a:hover {
     width: min(100% - 24px, 520px);
   }
 
+  .statsPage {
+    padding-top: 12px;
+  }
+
+  .statsShell {
+    width: min(100% - 24px, 640px);
+  }
+
   .dashboardHero {
     padding: 15px;
   }
 
+  .statsHero {
+    padding: 15px;
+  }
+
   .dashboardHero h1 {
+    font-size: 29px;
+  }
+
+  .statsHero h1 {
     font-size: 29px;
   }
 
@@ -1076,6 +1371,39 @@ footer nav a:hover {
 
   .macroCard {
     min-height: 0;
+  }
+
+  .averageGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rangeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statsPanelHeader {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .statsPanelHeader p {
+    text-align: left;
+  }
+
+  .calorieChart {
+    gap: 6px;
+  }
+
+  .chartDay strong {
+    font-size: 10px;
+  }
+
+  .comparisonRow {
+    grid-template-columns: 1fr auto;
+  }
+
+  .comparisonRow p {
+    display: none;
   }
 
   .premiumPage {

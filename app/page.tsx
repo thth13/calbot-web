@@ -68,28 +68,28 @@ const steps = [
 const macroMeta = {
   protein: {
     icon: "🥩",
-    label: "Белки",
-    unit: "г",
+    label: "Protein",
+    unit: "g",
     color: "#d7664f"
   },
   fat: {
     icon: "🥑",
-    label: "Жиры",
-    unit: "г",
+    label: "Fat",
+    unit: "g",
     color: "#5aa469"
   },
   carbs: {
     icon: "🍚",
-    label: "Углеводы",
-    unit: "г",
+    label: "Carbs",
+    unit: "g",
     color: "#c89432"
   }
 } as const;
 
 const quickActions = [
-  { id: "add_food", label: "+ Еда" },
-  { id: "scan_food", label: "Сканировать" },
-  { id: "open_history", label: "История" }
+  { id: "add_food", label: "+ Food" },
+  { id: "scan_food", label: "Scan" },
+  { id: "open_history", label: "History" }
 ];
 
 const BOT_URL = "https://t.me/caldetect_bot";
@@ -104,11 +104,11 @@ function percent(current: number, target: number) {
 
 function getDisplayName(user?: TelegramUser) {
   if (!user) {
-    return "Ваш день";
+    return "Your day";
   }
 
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-  return fullName || (user.username ? `@${user.username}` : "Ваш день");
+  return fullName || (user.username ? `@${user.username}` : "Your day");
 }
 
 function waitForTelegramWebApp(timeoutMs = 1500) {
@@ -277,42 +277,45 @@ function Dashboard({ data }: { data: DashboardData }) {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
-          <a className="dashboardPremium" href="/premium">
-            Premium
-          </a>
+          <nav className="dashboardNav" aria-label="Dashboard navigation">
+            <a href="/stats">Stats</a>
+            <a className="dashboardPremium" href="/premium">
+              Premium
+            </a>
+          </nav>
         </header>
 
         <div className="dashboardHero">
           <div>
-            <p className="eyebrow">Сегодня</p>
+            <p className="eyebrow">Today</p>
             <h1 id="dashboard-title">{userTitle}</h1>
           </div>
-          <div className="mealCounter" aria-label="Количество приемов пищи">
+          <div className="mealCounter" aria-label="Meal count">
             <strong>{day.meals}</strong>
-            <span>приема пищи</span>
+            <span>meals</span>
           </div>
         </div>
 
-        <section className="caloriePanel" aria-label="Калории за сегодня">
+        <section className="caloriePanel" aria-label="Calories for today">
           <div className="calorieSummary">
             <div>
-              <span>🔥 Калории</span>
+              <span>🔥 Calories</span>
               <strong>
                 {day.calories} / {day.calorieTarget} kcal
               </strong>
             </div>
             <div>
-              <span>Остаток</span>
+              <span>Remaining</span>
               <strong>{caloriesLeft} kcal</strong>
             </div>
           </div>
 
-          <div className="progressTrack" aria-label={`Калории выполнены на ${calorieProgress}%`}>
+          <div className="progressTrack" aria-label={`Calories completed at ${calorieProgress}%`}>
             <span style={{ width: `${calorieProgress}%` }} />
           </div>
         </section>
 
-        <section className="macroGrid" aria-label="Белки жиры углеводы">
+        <section className="macroGrid" aria-label="Protein fat carbs">
           {data.macros.map((macro) => {
             const meta = macroMeta[macro.id];
             const macroProgress = percent(macro.current, macro.target);
@@ -328,7 +331,7 @@ function Dashboard({ data }: { data: DashboardData }) {
                 </p>
                 <div
                   className="progressTrack compactTrack"
-                  aria-label={`${meta.label} выполнены на ${macroProgress}%`}
+                  aria-label={`${meta.label} completed at ${macroProgress}%`}
                 >
                   <span style={{ width: `${macroProgress}%`, background: meta.color }} />
                 </div>
@@ -337,13 +340,13 @@ function Dashboard({ data }: { data: DashboardData }) {
           })}
         </section>
 
-        <section className="lastFoodPanel" aria-label="Последняя добавленная еда">
-          <span>Последняя добавленная еда</span>
+        <section className="lastFoodPanel" aria-label="Last added food">
+          <span>Last added food</span>
           <strong>{day.lastFood}</strong>
           <p>{day.lastFoodTime}</p>
         </section>
 
-        <section className="quickActions" aria-label="Быстрые действия">
+        <section className="quickActions" aria-label="Quick actions">
           {quickActions.map((action) => (
             <button
               className="quickAction"
@@ -357,7 +360,7 @@ function Dashboard({ data }: { data: DashboardData }) {
         </section>
 
         {lastAction ? (
-          <p className="dashboardHint">Действие отправлено: {lastAction}</p>
+          <p className="dashboardHint">Action sent: {lastAction}</p>
         ) : null}
       </section>
     </main>

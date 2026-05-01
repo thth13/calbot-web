@@ -272,13 +272,13 @@ function getMealNutrition(meal: FoodEntryDocument) {
 
 function getMealTitle(meal?: FoodEntryDocument) {
   if (!meal) {
-    return "Пока нет добавленной еды";
+    return "No food added yet";
   }
 
   return readString(
     meal,
     ["foodDescription", "name", "title", "foodName", "description", "text", "meal", "items.0.name", "foods.0.name"],
-    "Еда без названия"
+    "Untitled food"
   );
 }
 
@@ -288,7 +288,7 @@ function formatMealTime(meal?: FoodEntryDocument) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit"
