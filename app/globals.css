@@ -745,6 +745,12 @@ footer nav a:hover {
   transform: translateY(1px);
 }
 
+.quickAction:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
 .dashboardHint {
   margin: 0;
   padding: 10px 12px;
@@ -753,6 +759,12 @@ footer nav a:hover {
   background: #edf9ef;
   color: #2f6f3c;
   font-size: 13px;
+}
+
+.errorHint {
+  border-color: #d9a19a;
+  background: #fff1ef;
+  color: #8c342b;
 }
 
 .legalPage {

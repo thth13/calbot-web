@@ -9,6 +9,9 @@ type UserDocument = Document & {
   username?: string;
   firstName?: string;
   dailyCalorieGoal?: number;
+  dailyProteinGoal?: number;
+  dailyCarbsGoal?: number;
+  dailyFatGoal?: number;
 };
 
 type FoodEntryDocument = Document & {
@@ -255,9 +258,21 @@ function getTargets(user: UserDocument) {
 
   return {
     calories,
-    protein: readNumber(user, ["proteinTarget", "nutritionGoals.protein", "goals.protein"], Math.round((calories * 0.25) / 4)),
-    fat: readNumber(user, ["fatTarget", "nutritionGoals.fat", "goals.fat"], Math.round((calories * 0.3) / 9)),
-    carbs: readNumber(user, ["carbsTarget", "carbTarget", "nutritionGoals.carbs", "goals.carbs"], Math.round((calories * 0.45) / 4))
+    protein: readNumber(
+      user,
+      ["dailyProteinGoal", "proteinTarget", "nutritionGoals.protein", "goals.protein"],
+      Math.round((calories * 0.25) / 4)
+    ),
+    fat: readNumber(
+      user,
+      ["dailyFatGoal", "fatTarget", "nutritionGoals.fat", "goals.fat"],
+      Math.round((calories * 0.3) / 9)
+    ),
+    carbs: readNumber(
+      user,
+      ["dailyCarbsGoal", "carbsTarget", "carbTarget", "nutritionGoals.carbs", "goals.carbs"],
+      Math.round((calories * 0.45) / 4)
+    )
   };
 }
 

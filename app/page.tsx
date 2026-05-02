@@ -100,6 +100,170 @@ function percent(current: number, target: number) {
   return Math.min(100, Math.round((current / target) * 100));
 }
 
+function roundRect(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + width - radius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + radius);
+  context.lineTo(x + width, y + height - radius);
+  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  context.lineTo(x + radius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
+}
+
+function drawProgress(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  progress: number,
+  color: string
+) {
+  context.fillStyle = "#ece6dc";
+  roundRect(context, x, y, width, height, height / 2);
+  context.fill();
+
+  context.fillStyle = color;
+  roundRect(context, x, y, Math.max(height, Math.round(width * (progress / 100))), height, height / 2);
+  context.fill();
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+
+      reject(new Error("Unable to generate share image"));
+    }, "image/png");
+  });
+}
+
+async function createDashboardShareFile(data: DashboardData, userTitle: string) {
+  const canvas = document.createElement("canvas");
+  const scale = 2;
+  const width = 1080;
+  const height = 1350;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas is not available");
+  }
+
+  context.scale(scale, scale);
+  context.fillStyle = "#f6f7f2";
+  context.fillRect(0, 0, width, height);
+
+  context.fillStyle = "#161412";
+  context.font = "800 44px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillText("CalBot", 72, 96);
+  context.font = "700 26px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#756f66";
+  context.fillText("Today", 72, 164);
+
+  context.font = "850 66px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#161412";
+  context.fillText(userTitle.slice(0, 24), 72, 245);
+
+  context.fillStyle = "#fffaf0";
+  roundRect(context, 72, 310, 936, 300, 18);
+  context.fill();
+  context.strokeStyle = "#d9d3cb";
+  context.lineWidth = 2;
+  context.stroke();
+
+  context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#756f66";
+  context.fillText("Calories", 112, 372);
+  context.font = "850 76px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#161412";
+  context.fillText(`${data.day.calories}`, 112, 468);
+  context.font = "760 32px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#756f66";
+  context.fillText(`/ ${data.day.calorieTarget} kcal`, 112, 520);
+
+  context.textAlign = "right";
+  context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillText("Remaining", 968, 372);
+  context.font = "850 48px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#5aa469";
+  context.fillText(`${Math.max(data.day.calorieTarget - data.day.calories, 0)} kcal`, 968, 442);
+  context.textAlign = "left";
+
+  drawProgress(context, 112, 548, 856, 22, percent(data.day.calories, data.day.calorieTarget), "#161412");
+
+  const macroY = 670;
+  data.macros.forEach((macro, index) => {
+    const meta = macroMeta[macro.id];
+    const cardX = 72 + index * 320;
+    context.fillStyle = "#ffffff";
+    roundRect(context, cardX, macroY, 296, 220, 18);
+    context.fill();
+    context.strokeStyle = "#d9d3cb";
+    context.lineWidth = 2;
+    context.stroke();
+
+    context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+    context.fillStyle = "#161412";
+    context.fillText(meta.label, cardX + 28, macroY + 56);
+    context.font = "800 36px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+    context.fillText(`${macro.current} / ${macro.target}${meta.unit}`, cardX + 28, macroY + 122);
+    drawProgress(
+      context,
+      cardX + 28,
+      macroY + 164,
+      240,
+      18,
+      percent(macro.current, macro.target),
+      meta.color
+    );
+  });
+
+  context.fillStyle = "#ffffff";
+  roundRect(context, 72, 950, 936, 190, 18);
+  context.fill();
+  context.strokeStyle = "#d9d3cb";
+  context.lineWidth = 2;
+  context.stroke();
+
+  context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#756f66";
+  context.fillText("Last added food", 112, 1015);
+  context.font = "850 42px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#161412";
+  context.fillText(data.day.lastFood.slice(0, 34), 112, 1080);
+  context.font = "700 28px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#756f66";
+  context.fillText(data.day.lastFoodTime, 112, 1125);
+
+  context.fillStyle = "#161412";
+  roundRect(context, 72, 1204, 936, 74, 14);
+  context.fill();
+  context.font = "800 28px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+  context.fillStyle = "#ffffff";
+  context.textAlign = "center";
+  context.fillText(`${data.day.meals} meals tracked with CalBot`, width / 2, 1252);
+  context.textAlign = "left";
+
+  const blob = await canvasToBlob(canvas);
+  return new File([blob], "calbot-today.png", { type: "image/png" });
+}
+
 function getDisplayName(user?: TelegramUser) {
   if (!user) {
     return "Your day";
@@ -245,6 +409,7 @@ function Landing() {
 
 function Dashboard({ data }: { data: DashboardData }) {
   const [lastAction, setLastAction] = useState("");
+  const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "saved" | "error">("idle");
   const day = data.day;
   const caloriesLeft = Math.max(day.calorieTarget - day.calories, 0);
   const calorieProgress = percent(day.calories, day.calorieTarget);
@@ -264,6 +429,42 @@ function Dashboard({ data }: { data: DashboardData }) {
 
     if (webApp?.initData && webApp.sendData) {
       webApp.sendData(JSON.stringify({ action: actionId }));
+    }
+  }
+
+  async function handleShare() {
+    const webApp = window.Telegram?.WebApp;
+    webApp?.HapticFeedback?.impactOccurred?.("light");
+    setShareStatus("sharing");
+
+    try {
+      const file = await createDashboardShareFile(data, userTitle);
+      const shareData = {
+        files: [file],
+        title: "CalBot today",
+        text: "My CalBot day"
+      };
+
+      if (navigator.canShare?.(shareData) && navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus("idle");
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.name;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setShareStatus("saved");
+    } catch (error) {
+      if ((error as DOMException).name === "AbortError") {
+        setShareStatus("idle");
+        return;
+      }
+
+      setShareStatus("error");
     }
   }
 
@@ -345,6 +546,14 @@ function Dashboard({ data }: { data: DashboardData }) {
           <a className="quickAction" href="/history">
             History
           </a>
+          <button
+            className="quickAction"
+            disabled={shareStatus === "sharing"}
+            onClick={handleShare}
+            type="button"
+          >
+            {shareStatus === "sharing" ? "Creating" : "Share"}
+          </button>
           {quickActions.map((action) => (
             <button
               className="quickAction"
@@ -359,6 +568,12 @@ function Dashboard({ data }: { data: DashboardData }) {
 
         {lastAction ? (
           <p className="dashboardHint">Action sent: {lastAction}</p>
+        ) : null}
+        {shareStatus === "saved" ? (
+          <p className="dashboardHint">Image saved. Send it in Telegram or Instagram.</p>
+        ) : null}
+        {shareStatus === "error" ? (
+          <p className="dashboardHint errorHint">Could not create the share image.</p>
         ) : null}
       </section>
     </main>
