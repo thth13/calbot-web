@@ -14,6 +14,7 @@ type TelegramWebApp = {
   expand?: () => void;
   close?: () => void;
   sendData?: (data: string) => void;
+  shareMessage?: (msgId: string, callback?: (sent: boolean) => void) => void;
   HapticFeedback?: {
     impactOccurred?: (style: "light" | "medium" | "heavy") => void;
   };
@@ -86,11 +87,28 @@ const macroMeta = {
   }
 } as const;
 
-const quickActions = [
-  { id: "scan_food", label: "Scan" }
-];
-
 const BOT_URL = "https://t.me/caldetect_bot";
+
+function ShareIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="18" viewBox="0 0 24 24" width="18">
+      <path
+        d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <path
+        d="M12 15V4m0 0 4 4m-4-4-4 4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
 
 function percent(current: number, target: number) {
   if (target <= 0) {
@@ -409,7 +427,8 @@ function Landing() {
 
 function Dashboard({ data }: { data: DashboardData }) {
   const [lastAction, setLastAction] = useState("");
-  const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "saved" | "error">("idle");
+  const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "sent" | "saved" | "error">("idle");
+  const [shareError, setShareError] = useState("");
   const day = data.day;
   const caloriesLeft = Math.max(day.calorieTarget - day.calories, 0);
   const calorieProgress = percent(day.calories, day.calorieTarget);
@@ -421,24 +440,58 @@ function Dashboard({ data }: { data: DashboardData }) {
   };
   const userTitle = getDisplayName(user);
 
-  function handleQuickAction(actionId: string) {
-    const webApp = window.Telegram?.WebApp;
-
-    webApp?.HapticFeedback?.impactOccurred?.("light");
-    setLastAction(actionId);
-
-    if (webApp?.initData && webApp.sendData) {
-      webApp.sendData(JSON.stringify({ action: actionId }));
-    }
-  }
-
   async function handleShare() {
     const webApp = window.Telegram?.WebApp;
     webApp?.HapticFeedback?.impactOccurred?.("light");
     setShareStatus("sharing");
+    setShareError("");
 
     try {
       const file = await createDashboardShareFile(data, userTitle);
+
+      if (webApp?.initData && webApp.shareMessage) {
+        const formData = new FormData();
+        formData.append("initData", webApp.initData);
+        formData.append("photo", file);
+        formData.append("userTitle", userTitle);
+        formData.append("calories", String(day.calories));
+        formData.append("calorieTarget", String(day.calorieTarget));
+        formData.append("meals", String(day.meals));
+
+        const response = await fetch("/api/dashboard/share", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorBody = (await response.json().catch(() => undefined)) as
+            | { detail?: string; error?: string }
+            | undefined;
+          throw new Error(errorBody?.detail || errorBody?.error || "Telegram share failed");
+        }
+
+        const body = (await response.json()) as { preparedMessageId?: string };
+        if (!body.preparedMessageId) {
+          throw new Error("Telegram prepared message is missing");
+        }
+
+        const wasSent = await new Promise<boolean>((resolve) => {
+          webApp.shareMessage?.(body.preparedMessageId as string, resolve);
+        });
+
+        if (!wasSent) {
+          setShareStatus("idle");
+          return;
+        }
+
+        webApp.HapticFeedback?.impactOccurred?.("medium");
+        setShareStatus("sent");
+        window.setTimeout(() => {
+          setShareStatus("idle");
+        }, 3000);
+        return;
+      }
+
       const shareData = {
         files: [file],
         title: "CalBot today",
@@ -464,6 +517,7 @@ function Dashboard({ data }: { data: DashboardData }) {
         return;
       }
 
+      setShareError(error instanceof Error ? error.message : "");
       setShareStatus("error");
     }
   }
@@ -476,6 +530,16 @@ function Dashboard({ data }: { data: DashboardData }) {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
+          <button
+            aria-label="Share dashboard"
+            className="dashboardShareButton"
+            disabled={shareStatus === "sharing"}
+            onClick={handleShare}
+            title="Share"
+            type="button"
+          >
+            <ShareIcon />
+          </button>
         </header>
 
         <div className="dashboardHero">
@@ -546,24 +610,6 @@ function Dashboard({ data }: { data: DashboardData }) {
           <a className="quickAction" href="/history">
             History
           </a>
-          <button
-            className="quickAction"
-            disabled={shareStatus === "sharing"}
-            onClick={handleShare}
-            type="button"
-          >
-            {shareStatus === "sharing" ? "Creating" : "Share"}
-          </button>
-          {quickActions.map((action) => (
-            <button
-              className="quickAction"
-              key={action.id}
-              onClick={() => handleQuickAction(action.id)}
-              type="button"
-            >
-              {action.label}
-            </button>
-          ))}
         </section>
 
         {lastAction ? (
@@ -572,8 +618,13 @@ function Dashboard({ data }: { data: DashboardData }) {
         {shareStatus === "saved" ? (
           <p className="dashboardHint">Image saved. Send it in Telegram or Instagram.</p>
         ) : null}
+        {shareStatus === "sent" ? (
+          <p className="dashboardHint">Sent to your Telegram chat.</p>
+        ) : null}
         {shareStatus === "error" ? (
-          <p className="dashboardHint errorHint">Could not create the share image.</p>
+          <p className="dashboardHint errorHint">
+            {shareError || "Could not send the Telegram share."}
+          </p>
         ) : null}
       </section>
     </main>

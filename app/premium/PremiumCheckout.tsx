@@ -53,6 +53,7 @@ declare global {
         expand?: () => void;
         close?: () => void;
         sendData?: (data: string) => void;
+        shareMessage?: (msgId: string, callback?: (sent: boolean) => void) => void;
         HapticFeedback?: {
           impactOccurred?: (style: "light" | "medium" | "heavy") => void;
         };
