@@ -1451,6 +1451,40 @@ footer nav a:hover {
   line-height: 1.25;
 }
 
+.foodTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.foodTitleRow strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.foodTypeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #eef6f0;
+  color: #2f6f3c;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.foodTypeBadge.snack {
+  background: #fff7d7;
+  color: #6f5713;
+}
+
 .foodInfo p {
   margin-bottom: 0;
   color: var(--muted);
@@ -1490,6 +1524,56 @@ footer nav a:hover {
   font: inherit;
   font-size: 14px;
   font-weight: 760;
+}
+
+.foodTypeToggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.foodTypeToggle legend {
+  grid-column: 1 / -1;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.foodTypeToggle label {
+  cursor: pointer;
+}
+
+.foodTypeToggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.foodTypeToggle label span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fffaf0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 850;
+  text-transform: none;
+}
+
+.foodTypeToggle input:checked + span {
+  border-color: #191714;
+  background: #eef6f0;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 #ded7cd;
 }
 
 .foodEditGrid {

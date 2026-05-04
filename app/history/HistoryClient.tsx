@@ -12,6 +12,7 @@ type HistoryItem = {
   id: string;
   time: string;
   name: string;
+  mealType: "meal" | "snack";
   kcal: number;
   protein: number;
   fat: number;
@@ -32,6 +33,7 @@ type HistoryData = {
 
 type EditDraft = {
   name: string;
+  mealType: "meal" | "snack";
   kcal: string;
   protein: string;
   fat: string;
@@ -64,6 +66,7 @@ function waitForTelegramWebApp(timeoutMs = 1500) {
 function toDraft(item: HistoryItem): EditDraft {
   return {
     name: item.name,
+    mealType: item.mealType,
     kcal: String(item.kcal),
     protein: String(item.protein),
     fat: String(item.fat),
@@ -152,6 +155,29 @@ function HistoryContent({
                                 onChange={(event) => onChangeDraft({ ...editDraft, name: event.target.value })}
                               />
                             </label>
+                            <fieldset className="foodTypeToggle">
+                              <legend>Type</legend>
+                              <label>
+                                <input
+                                  checked={editDraft.mealType === "meal"}
+                                  name={`meal-type-${item.id}`}
+                                  type="radio"
+                                  value="meal"
+                                  onChange={() => onChangeDraft({ ...editDraft, mealType: "meal" })}
+                                />
+                                <span>Meal</span>
+                              </label>
+                              <label>
+                                <input
+                                  checked={editDraft.mealType === "snack"}
+                                  name={`meal-type-${item.id}`}
+                                  type="radio"
+                                  value="snack"
+                                  onChange={() => onChangeDraft({ ...editDraft, mealType: "snack" })}
+                                />
+                                <span>Snack</span>
+                              </label>
+                            </fieldset>
                             <div className="foodEditGrid">
                               <label>
                                 <span>Kcal</span>
@@ -197,7 +223,10 @@ function HistoryContent({
                           </form>
                         ) : (
                           <>
-                            <strong>{item.name}</strong>
+                            <div className="foodTitleRow">
+                              <strong>{item.name}</strong>
+                              <span className={`foodTypeBadge ${item.mealType}`}>{item.mealType}</span>
+                            </div>
                             <p>
                               {item.kcal} kcal · P {item.protein} · F {item.fat} · C {item.carbs}
                             </p>
@@ -267,6 +296,7 @@ export default function HistoryClient() {
   const [actionError, setActionError] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft>({
     name: "",
+    mealType: "meal",
     kcal: "",
     protein: "",
     fat: "",
@@ -362,6 +392,7 @@ export default function HistoryClient() {
         body: JSON.stringify({
           initData,
           foodDescription: editDraft.name,
+          mealType: editDraft.mealType,
           calories: editDraft.kcal,
           protein: editDraft.protein,
           fat: editDraft.fat,

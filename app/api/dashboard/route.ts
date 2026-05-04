@@ -19,6 +19,7 @@ type FoodEntryDocument = Document & {
   userId?: ObjectId;
   telegramId?: number;
   foodDescription?: string;
+  mealType?: "meal" | "snack";
   calories?: number;
   protein?: number;
   carbs?: number;
@@ -297,6 +298,10 @@ function getMealTitle(meal?: FoodEntryDocument) {
   );
 }
 
+function getMealType(meal: FoodEntryDocument) {
+  return meal.mealType === "snack" ? "snack" : "meal";
+}
+
 function formatMealTime(meal?: FoodEntryDocument) {
   const date = meal ? readDate(meal) : undefined;
   if (!date) {
@@ -391,7 +396,7 @@ export async function POST(request: Request) {
     day: {
       calories: Math.round(totals.calories),
       calorieTarget: Math.round(targets.calories),
-      meals: foodEntries.length,
+      meals: foodEntries.filter((entry) => getMealType(entry) === "meal").length,
       lastFood: getMealTitle(lastFoodEntry),
       lastFoodTime: formatMealTime(lastFoodEntry)
     },

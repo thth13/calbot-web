@@ -73,6 +73,14 @@ function parseFiniteNumber(value: unknown) {
   return undefined;
 }
 
+function parseMealType(value: unknown) {
+  if (value === "meal" || value === "snack") {
+    return value;
+  }
+
+  return undefined;
+}
+
 async function getAuthorizedContext(request: Request) {
   const botToken = getTelegramBotToken();
   if (!botToken) {
@@ -132,12 +140,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ entry
   }
 
   const foodDescription = typeof authorized.body.foodDescription === "string" ? authorized.body.foodDescription.trim() : "";
+  const mealType = parseMealType(authorized.body.mealType);
   const calories = parseFiniteNumber(authorized.body.calories);
   const protein = parseFiniteNumber(authorized.body.protein);
   const fat = parseFiniteNumber(authorized.body.fat);
   const carbs = parseFiniteNumber(authorized.body.carbs);
 
-  if (!foodDescription || calories === undefined || protein === undefined || fat === undefined || carbs === undefined) {
+  if (
+    !foodDescription ||
+    !mealType ||
+    calories === undefined ||
+    protein === undefined ||
+    fat === undefined ||
+    carbs === undefined
+  ) {
     return NextResponse.json({ error: "Food description and nutrition values are required" }, { status: 400 });
   }
 
@@ -153,6 +169,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ entry
     {
       $set: {
         foodDescription,
+        mealType,
         calories,
         protein,
         fat,

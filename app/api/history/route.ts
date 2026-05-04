@@ -13,6 +13,7 @@ type FoodEntryDocument = Document & {
   userId?: ObjectId | string;
   telegramId?: number | string;
   foodDescription?: string;
+  mealType?: "meal" | "snack";
   calories?: number | string;
   protein?: number | string;
   carbs?: number | string;
@@ -32,6 +33,7 @@ type HistoryResponse = {
       id: string;
       time: string;
       name: string;
+      mealType: "meal" | "snack";
       kcal: number;
       protein: number;
       fat: number;
@@ -206,6 +208,10 @@ function getNutrition(entry: FoodEntryDocument) {
   };
 }
 
+function getMealType(entry: FoodEntryDocument) {
+  return entry.mealType === "snack" ? "snack" : "meal";
+}
+
 function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
   const todayKey = getLocalDateKey(new Date());
   const yesterdayKey = getLocalDateKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
@@ -234,6 +240,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
       id: entry._id?.toString() ?? `${dateKey}-${day.items.length}`,
       time: formatTime(createdAt),
       name: readString(entry, ["foodDescription", "name", "title", "foodName", "description", "text"], "Untitled food"),
+      mealType: getMealType(entry),
       kcal: nutrition.kcal,
       protein: nutrition.protein,
       fat: nutrition.fat,
