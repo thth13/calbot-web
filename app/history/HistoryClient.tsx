@@ -286,6 +286,59 @@ function HistoryContent({
   );
 }
 
+function HistorySkeleton() {
+  return (
+    <>
+      <h1 className="srOnly" id="history-title">
+        Loading history
+      </h1>
+      <section className="diaryHero" aria-hidden="true">
+        <div>
+          <span className="skeletonLine skeletonEyebrow" />
+          <span className="skeletonLine skeletonTitle" />
+        </div>
+        <div className="diaryTotal skeletonTarget">
+          <span className="skeletonLine" />
+          <strong className="skeletonLine" />
+        </div>
+      </section>
+
+      <div className="diaryDays" aria-hidden="true">
+        {Array.from({ length: 2 }, (_, dayIndex) => (
+          <article className="diaryDay" key={dayIndex}>
+            <header className="diaryDayHeader">
+              <div>
+                <span className="skeletonLine skeletonEyebrow" />
+                <strong className="skeletonLine skeletonHeading" />
+              </div>
+              <p className="skeletonLine skeletonHeaderMeta" />
+            </header>
+
+            <div className="foodList dayFoodList">
+              {Array.from({ length: dayIndex === 0 ? 3 : 2 }, (_, itemIndex) => (
+                <article className="foodItem skeletonFoodItem" key={itemIndex}>
+                  <span className="foodTime skeletonLine" />
+                  <div className="foodInfo">
+                    <div className="foodTitleRow">
+                      <strong className="skeletonLine" />
+                      <span className="foodTypeBadge skeletonLine" />
+                    </div>
+                    <p className="skeletonLine" />
+                  </div>
+                  <div className="foodActions">
+                    <span className="skeletonLine" />
+                    <span className="skeletonLine" />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function HistoryClient() {
   const [historyData, setHistoryData] = useState<HistoryData | undefined>();
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable" | "error">("loading");
@@ -456,7 +509,9 @@ export default function HistoryClient() {
           </nav>
         </header>
 
-        {status === "ready" && historyData ? (
+        {status === "loading" ? (
+          <HistorySkeleton />
+        ) : status === "ready" && historyData ? (
           <>
             {actionError ? <p className="diaryActionError">{actionError}</p> : null}
             <HistoryContent
@@ -483,18 +538,12 @@ export default function HistoryClient() {
             <header className="diaryDayHeader">
               <div>
                 <span>History</span>
-                <strong id="history-title">
-                  {status === "loading" ? "Loading history" : "History unavailable"}
-                </strong>
+                <strong id="history-title">History unavailable</strong>
               </div>
               <p>0 kcal</p>
             </header>
             <div className="dayFoodList">
-              <p>
-                {status === "loading"
-                  ? "Fetching your food entries."
-                  : "Open this page from the Telegram app to load your history."}
-              </p>
+              <p>Open this page from the Telegram app to load your history.</p>
             </div>
           </section>
         )}

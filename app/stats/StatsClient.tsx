@@ -178,6 +178,89 @@ function StatsContent({
   );
 }
 
+function StatsSkeleton() {
+  const barHeights = ["48%", "72%", "58%", "84%", "42%", "68%", "52%"];
+
+  return (
+    <>
+      <h1 className="srOnly" id="stats-title">
+        Loading stats
+      </h1>
+      <section className="statsHero" aria-hidden="true">
+        <div>
+          <span className="skeletonLine skeletonEyebrow" />
+          <span className="skeletonLine skeletonTitle" />
+        </div>
+        <div className="statsTarget skeletonTarget">
+          <span className="skeletonLine" />
+          <strong className="skeletonLine" />
+        </div>
+      </section>
+
+      <section className="statsChartPanel" aria-hidden="true">
+        <div className="statsPanelHeader">
+          <div>
+            <span className="skeletonLine skeletonWeek" />
+            <span className="skeletonLine skeletonHeading" />
+          </div>
+          <span className="skeletonLine skeletonHeaderMeta" />
+        </div>
+
+        <div className="calorieChart skeletonChart">
+          {barHeights.map((height, index) => (
+            <div className="chartDay" key={height}>
+              <div className="chartBarWrap">
+                <span className="skeletonBar" style={{ height }} />
+              </div>
+              <span className="skeletonLine skeletonChartValue" />
+              <span className="skeletonLine skeletonChartLabel" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="averageGrid" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, index) => (
+          <article className="statCard skeletonCard" key={index}>
+            <span className="skeletonLine" />
+            <strong className="skeletonLine" />
+            <p className="skeletonLine" />
+          </article>
+        ))}
+      </section>
+
+      <section className="rangeGrid" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <article className="rangeCard skeletonCard" key={index}>
+            <span className="skeletonLine" />
+            <strong className="skeletonLine" />
+            <p className="skeletonLine" />
+          </article>
+        ))}
+      </section>
+
+      <section className="comparisonPanel" aria-hidden="true">
+        <div className="statsPanelHeader">
+          <div>
+            <span className="skeletonLine skeletonEyebrow" />
+            <span className="skeletonLine skeletonHeading" />
+          </div>
+        </div>
+        <div className="comparisonRows">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div className="comparisonRow skeletonComparisonRow" key={index}>
+              <span className="skeletonLine" />
+              <strong className="skeletonLine" />
+              <p className="skeletonLine" />
+              <em className="skeletonLine" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
 export default function StatsClient() {
   const [statsData, setStatsData] = useState<StatsData | undefined>();
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable" | "error">("loading");
@@ -255,7 +338,9 @@ export default function StatsClient() {
           </nav>
         </header>
 
-        {status === "ready" && statsData ? (
+        {status == "loading" ? (
+          <StatsSkeleton />
+        ) : status === "ready" && statsData ? (
           <StatsContent
             data={statsData}
             onPreviousWeek={showPreviousWeek}
@@ -266,16 +351,10 @@ export default function StatsClient() {
             <div className="statsPanelHeader">
               <div>
                 <span>Stats</span>
-                <strong id="stats-title">
-                  {status === "loading" ? "Loading stats" : "Stats unavailable"}
-                </strong>
+                <strong id="stats-title">Stats unavailable</strong>
               </div>
             </div>
-            <p>
-              {status === "loading"
-                ? "Fetching your calorie history."
-                : "Open this page from the Telegram app to load your personal stats."}
-            </p>
+            <p>Open this page from the Telegram app to load your personal stats.</p>
           </section>
         )}
 
