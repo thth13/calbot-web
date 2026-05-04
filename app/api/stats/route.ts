@@ -27,11 +27,16 @@ type DayStats = {
   key: string;
   label: string;
   calories: number;
+  hasEntries: boolean;
   status: "under" | "in-range" | "over";
 };
 
 type StatsResponse = {
   calorieTarget: number;
+  weekRange: {
+    label: string;
+    isCurrentWeek: boolean;
+  };
   calorieDays: DayStats[];
   averageCards: Array<{
     label: string;
@@ -223,10 +228,14 @@ function getStatus(calories: number, target: number): DayStats["status"] {
 }
 
 function getAverage(days: DayStats[], count: number) {
-  const selected = days.slice(-count);
+  const selected = days.slice(-count).filter((day) => day.hasEntries);
+  if (!selected.length) {
+    return 0;
+  }
+
   const total = selected.reduce((sum, day) => sum + day.calories, 0);
 
-  return Math.round(total / count);
+  return Math.round(total / selected.length);
 }
 
 function formatDelta(value: number, target: number) {
@@ -280,9 +289,37 @@ function formatDayTrend(current: number, previous: number) {
   return `${diff > 0 ? "+" : ""}${diff} ${unit}`;
 }
 
-function buildResponse(entries: FoodEntryDocument[], calorieTarget: number): StatsResponse {
+function formatWeekRange(days: DayStats[]) {
+  const first = days[0]?.key;
+  const last = days.at(-1)?.key;
+
+  if (!first || !last) {
+    return "Selected week";
+  }
+
+  const firstDate = getDayStartFromKey(first, TIME_ZONE);
+  const lastDate = getDayStartFromKey(last, TIME_ZONE);
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: TIME_ZONE,
+    month: "short",
+    day: "numeric"
+  });
+
+  return `${formatter.format(firstDate)} - ${formatter.format(lastDate)}`;
+}
+
+function readWeekOffset(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(52, Math.max(0, Math.trunc(value)));
+}
+
+function buildResponse(entries: FoodEntryDocument[], calorieTarget: number, weekOffset: number): StatsResponse {
   const todayStart = getTodayStart(TIME_ZONE);
-  const firstDayStart = new Date(todayStart.getTime() - 29 * DAY_MS);
+  const selectedEndStart = new Date(todayStart.getTime() - weekOffset * 7 * DAY_MS);
+  const firstDayStart = new Date(selectedEndStart.getTime() - 29 * DAY_MS);
   const caloriesByDay = new Map<string, number>();
 
   for (const entry of entries) {
@@ -305,6 +342,7 @@ function buildResponse(entries: FoodEntryDocument[], calorieTarget: number): Sta
       key,
       label: new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, weekday: "short" }).format(date),
       calories,
+      hasEntries: caloriesByDay.has(key),
       status: getStatus(calories, calorieTarget)
     };
   });
@@ -321,6 +359,10 @@ function buildResponse(entries: FoodEntryDocument[], calorieTarget: number): Sta
 
   return {
     calorieTarget,
+    weekRange: {
+      label: formatWeekRange(last7),
+      isCurrentWeek: weekOffset === 0
+    },
     calorieDays: last7,
     averageCards: [
       { label: "7 days", value: average7, delta: formatDelta(average7, calorieTarget) },
@@ -362,10 +404,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "TELEGRAM_BOT_TOKEN is not configured" }, { status: 500 });
   }
 
-  const body = (await request.json().catch(() => undefined)) as { initData?: unknown } | undefined;
+  const body = (await request.json().catch(() => undefined)) as
+    | { initData?: unknown; weekOffset?: unknown }
+    | undefined;
   if (typeof body?.initData !== "string" || !body.initData) {
     return NextResponse.json({ error: "initData is required" }, { status: 400 });
   }
+
+  const weekOffset = readWeekOffset(body.weekOffset);
 
   let telegramUser: TelegramUser | undefined;
   try {
@@ -386,8 +432,9 @@ export async function POST(request: Request) {
   }
 
   const todayStart = getTodayStart(TIME_ZONE);
-  const start = new Date(todayStart.getTime() - 29 * DAY_MS);
-  const end = new Date(todayStart.getTime() + DAY_MS);
+  const selectedEndStart = new Date(todayStart.getTime() - weekOffset * 7 * DAY_MS);
+  const start = new Date(selectedEndStart.getTime() - 29 * DAY_MS);
+  const end = new Date(selectedEndStart.getTime() + DAY_MS);
   const foodEntries = (await db
     .collection<Document>(FOOD_ENTRIES_COLLECTION)
     .find({
@@ -405,5 +452,5 @@ export async function POST(request: Request) {
     .limit(1000)
     .toArray()) as FoodEntryDocument[];
 
-  return NextResponse.json(buildResponse(foodEntries, getCalorieTarget(registeredUser)));
+  return NextResponse.json(buildResponse(foodEntries, getCalorieTarget(registeredUser), weekOffset));
 }

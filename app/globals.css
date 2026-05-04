@@ -1144,6 +1144,34 @@ footer nav a:hover {
   text-align: right;
 }
 
+.statsPanelHeader .weekControls {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 7px;
+}
+
+.weekControls button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.weekControls button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
 .calorieChart {
   position: relative;
   display: grid;
@@ -1775,6 +1803,10 @@ footer nav a:hover {
 
   .statsPanelHeader p {
     text-align: left;
+  }
+
+  .statsPanelHeader .weekControls {
+    justify-content: start;
   }
 
   .calorieChart {

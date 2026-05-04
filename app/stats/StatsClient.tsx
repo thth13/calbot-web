@@ -10,6 +10,10 @@ type TelegramWebApp = {
 
 type StatsData = {
   calorieTarget: number;
+  weekRange: {
+    label: string;
+    isCurrentWeek: boolean;
+  };
   calorieDays: Array<{
     key: string;
     label: string;
@@ -67,7 +71,15 @@ function getTargetLineBottom(calorieTarget: number, days: StatsData["calorieDays
   return `${Math.min(100, Math.round((calorieTarget / maxCalories) * 100))}%`;
 }
 
-function StatsContent({ data }: { data: StatsData }) {
+function StatsContent({
+  data,
+  onPreviousWeek,
+  onNextWeek
+}: {
+  data: StatsData;
+  onPreviousWeek: () => void;
+  onNextWeek: () => void;
+}) {
   const average7 = data.averageCards[0]?.value ?? 0;
   const inTarget = data.rangeCards[0]?.value ?? "0 / 7";
 
@@ -87,7 +99,20 @@ function StatsContent({ data }: { data: StatsData }) {
       <section className="statsChartPanel" aria-label="Daily calories chart">
         <div className="statsPanelHeader">
           <div>
-            <span>Last 7 days</span>
+            <div className="weekControls" aria-label="Choose week">
+              <button type="button" onClick={onPreviousWeek} aria-label="Previous week">
+                ‹
+              </button>
+              <span>{data.weekRange.label}</span>
+              <button
+                type="button"
+                onClick={onNextWeek}
+                disabled={data.weekRange.isCurrentWeek}
+                aria-label="Next week"
+              >
+                ›
+              </button>
+            </div>
             <strong>{average7} kcal average</strong>
           </div>
           <p>{inTarget} days in target</p>
@@ -156,6 +181,7 @@ function StatsContent({ data }: { data: StatsData }) {
 export default function StatsClient() {
   const [statsData, setStatsData] = useState<StatsData | undefined>();
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable" | "error">("loading");
+  const [weekOffset, setWeekOffset] = useState(0);
 
   useEffect(() => {
     let isActive = true;
@@ -174,12 +200,13 @@ export default function StatsClient() {
       webApp.expand?.();
 
       try {
+        setStatus((currentStatus) => (currentStatus === "ready" ? currentStatus : "loading"));
         const response = await fetch("/api/stats", {
           method: "POST",
           headers: {
             "content-type": "application/json"
           },
-          body: JSON.stringify({ initData: webApp.initData })
+          body: JSON.stringify({ initData: webApp.initData, weekOffset })
         });
 
         if (!isActive) {
@@ -205,7 +232,15 @@ export default function StatsClient() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [weekOffset]);
+
+  function showPreviousWeek() {
+    setWeekOffset((current) => Math.min(52, current + 1));
+  }
+
+  function showNextWeek() {
+    setWeekOffset((current) => Math.max(0, current - 1));
+  }
 
   return (
     <main className="statsPage">
@@ -221,7 +256,11 @@ export default function StatsClient() {
         </header>
 
         {status === "ready" && statsData ? (
-          <StatsContent data={statsData} />
+          <StatsContent
+            data={statsData}
+            onPreviousWeek={showPreviousWeek}
+            onNextWeek={showNextWeek}
+          />
         ) : (
           <section className="comparisonPanel" aria-live="polite">
             <div className="statsPanelHeader">
