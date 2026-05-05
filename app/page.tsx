@@ -136,6 +136,27 @@ function percent(current: number, target: number) {
   return Math.min(100, Math.round((current / target) * 100));
 }
 
+function isGoalReached(current: number, target: number) {
+  return target > 0 && current >= target;
+}
+
+function isCalorieOverLimit(current: number, target: number) {
+  return target > 0 && current - target > 300;
+}
+
+function getOverAmount(current: number, target: number) {
+  return Math.max(Math.round(current - target), 0);
+}
+
+function isMacroOverLimit(id: "protein" | "fat" | "carbs", current: number, target: number) {
+  if (id === "protein" || target <= 0) {
+    return false;
+  }
+
+  const caloriesPerGram = id === "fat" ? 9 : 4;
+  return (current - target) * caloriesPerGram > 300;
+}
+
 function roundRect(
   context: CanvasRenderingContext2D,
   x: number,
@@ -464,6 +485,9 @@ function Dashboard({
   const canGoForward = selectedDate < todayKey;
   const caloriesLeft = Math.max(day.calorieTarget - day.calories, 0);
   const calorieProgress = percent(day.calories, day.calorieTarget);
+  const calorieGoalReached = isGoalReached(day.calories, day.calorieTarget);
+  const calorieOverLimit = isCalorieOverLimit(day.calories, day.calorieTarget);
+  const calorieOverAmount = getOverAmount(day.calories, day.calorieTarget);
   const user = {
     id: data.user.id,
     username: data.user.username,
@@ -604,7 +628,12 @@ function Dashboard({
           </div>
         </div>
 
-        <section className="caloriePanel" aria-label={`Calories for ${day.title}`}>
+        <section
+          className={`caloriePanel${calorieGoalReached ? " isGoalReached" : ""}${
+            calorieOverLimit ? " isOverLimit" : ""
+          }`}
+          aria-label={`Calories for ${day.title}`}
+        >
           <div className="calorieSummary">
             <div>
               <span>🔥 Calories</span>
@@ -613,8 +642,18 @@ function Dashboard({
               </strong>
             </div>
             <div>
-              <span>Remaining</span>
-              <strong>{caloriesLeft} kcal</strong>
+              <span>{calorieGoalReached ? "Goal status" : "Remaining"}</span>
+              <strong
+                className={
+                  calorieOverLimit ? "statusBadge overLimitText" : calorieGoalReached ? "goalReachedText" : undefined
+                }
+              >
+                {calorieOverLimit
+                  ? `Over by ${calorieOverAmount} kcal`
+                  : calorieGoalReached
+                    ? "Goal reached"
+                    : `${caloriesLeft} kcal`}
+              </strong>
             </div>
           </div>
 
@@ -627,9 +666,17 @@ function Dashboard({
           {data.macros.map((macro) => {
             const meta = macroMeta[macro.id];
             const macroProgress = percent(macro.current, macro.target);
+            const macroGoalReached = isGoalReached(macro.current, macro.target);
+            const macroOverLimit = isMacroOverLimit(macro.id, macro.current, macro.target);
+            const macroOverAmount = getOverAmount(macro.current, macro.target);
 
             return (
-              <article className="macroCard" key={macro.id}>
+              <article
+                className={`macroCard${macroGoalReached ? " isGoalReached" : ""}${
+                  macroOverLimit ? " isOverLimit" : ""
+                }`}
+                key={macro.id}
+              >
                 <div className="macroCardTop">
                   <span>{meta.icon}</span>
                   <strong>{meta.label}</strong>
@@ -637,6 +684,13 @@ function Dashboard({
                 <p>
                   {macro.current} / {macro.target} {meta.unit}
                 </p>
+                {macroOverLimit ? (
+                  <p className="goalReachedBadge overLimitText">
+                    Over by {macroOverAmount} {meta.unit}
+                  </p>
+                ) : macroGoalReached ? (
+                  <p className="goalReachedBadge">Goal reached</p>
+                ) : null}
                 <div
                   className="progressTrack compactTrack"
                   aria-label={`${meta.label} completed at ${macroProgress}%`}

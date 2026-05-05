@@ -10,6 +10,7 @@
   --blue: #2f80ed;
   --green: #5aa469;
   --gold: #c89432;
+  --red: #d64f45;
 }
 
 * {
@@ -686,8 +687,17 @@ footer nav a:hover {
   display: grid;
   gap: 16px;
   padding: 18px;
+  border: 1px solid transparent;
   background: #fffaf0;
   box-shadow: 6px 6px 0 #ded7cd;
+}
+
+.caloriePanel.isGoalReached {
+  border-color: var(--green);
+}
+
+.caloriePanel.isOverLimit {
+  border-color: var(--red);
 }
 
 .calorieSummary {
@@ -722,6 +732,27 @@ footer nav a:hover {
 .calorieSummary div:last-child strong {
   color: var(--green);
   font-size: 22px;
+}
+
+.calorieSummary .statusBadge {
+  width: fit-content;
+  justify-self: end;
+  padding: 6px 9px;
+  border-radius: 8px;
+}
+
+.calorieSummary .goalReachedText {
+  color: var(--green);
+}
+
+.calorieSummary .overLimitText {
+  border: 1px solid var(--red);
+  background: color-mix(in srgb, var(--red) 8%, transparent);
+  color: var(--red);
+}
+
+.calorieSummary div:last-child strong.overLimitText {
+  color: var(--red);
 }
 
 .progressTrack {
@@ -776,6 +807,31 @@ footer nav a:hover {
   font-size: 15px;
   font-weight: 760;
   line-height: 1.25;
+}
+
+.macroCard.isGoalReached {
+  border-color: var(--green);
+}
+
+.macroCard.isOverLimit {
+  border-color: var(--red);
+}
+
+.macroCard .goalReachedBadge {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--green) 40%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.macroCard .goalReachedBadge.overLimitText {
+  border-color: color-mix(in srgb, var(--red) 40%, transparent);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+  color: var(--red);
 }
 
 .compactTrack {
@@ -1981,6 +2037,10 @@ footer nav a:hover {
 
   .calorieSummary div:last-child {
     text-align: left;
+  }
+
+  .calorieSummary .statusBadge {
+    justify-self: start;
   }
 
   .macroGrid {
