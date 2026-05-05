@@ -35,6 +35,9 @@ type DashboardResponse = {
     lastName?: string;
   };
   day: {
+    dateKey: string;
+    title: string;
+    label: string;
     calories: number;
     calorieTarget: number;
     meals: number;
@@ -158,19 +161,18 @@ function getTimeZoneOffset(date: Date, timeZone: string) {
   return asUtc - date.getTime();
 }
 
-function getTodayRange(timeZone: string) {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
+function getLocalDateKey(date: Date, timeZone: string) {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
-  }).formatToParts(now);
+  }).format(date);
+}
 
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const localMidnightAsUtc = new Date(
-    Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day))
-  );
+function getDayRange(dateKey: string, timeZone: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const localMidnightAsUtc = new Date(Date.UTC(year, month - 1, day));
   const start = new Date(
     localMidnightAsUtc.getTime() - getTimeZoneOffset(localMidnightAsUtc, timeZone)
   );
@@ -179,6 +181,53 @@ function getTodayRange(timeZone: string) {
     start,
     end: new Date(start.getTime() + 24 * 60 * 60 * 1000)
   };
+}
+
+function getTodayKey(timeZone: string) {
+  return getLocalDateKey(new Date(), timeZone);
+}
+
+function getPreviousDateKey(dateKey: string) {
+  const date = new Date(`${dateKey}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() - 1);
+
+  return date.toISOString().slice(0, 10);
+}
+
+function formatDateTitle(dateKey: string, todayKey: string) {
+  if (dateKey === todayKey) {
+    return "Today";
+  }
+
+  if (dateKey === getPreviousDateKey(todayKey)) {
+    return "Yesterday";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: TIME_ZONE,
+    weekday: "long"
+  }).format(new Date(`${dateKey}T12:00:00.000Z`));
+}
+
+function formatDateLabel(dateKey: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: TIME_ZONE,
+    month: "long",
+    day: "numeric"
+  }).format(new Date(`${dateKey}T12:00:00.000Z`));
+}
+
+function parseDateKey(value: unknown) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return undefined;
+  }
+
+  const date = new Date(`${value}T12:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    return undefined;
+  }
+
+  return value;
 }
 
 function getUserFilter(telegramUser: TelegramUser): Filter<UserDocument> {
@@ -321,7 +370,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "TELEGRAM_BOT_TOKEN is not configured" }, { status: 500 });
   }
 
-  const body = (await request.json().catch(() => undefined)) as { initData?: unknown } | undefined;
+  const body = (await request.json().catch(() => undefined)) as { initData?: unknown; date?: unknown } | undefined;
   if (typeof body?.initData !== "string" || !body.initData) {
     return NextResponse.json({ error: "initData is required" }, { status: 400 });
   }
@@ -344,7 +393,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "User is not registered" }, { status: 404 });
   }
 
-  const { start, end } = getTodayRange(TIME_ZONE);
+  const todayKey = getTodayKey(TIME_ZONE);
+  const dateKey = parseDateKey(body.date) ?? todayKey;
+  const { start, end } = getDayRange(dateKey, TIME_ZONE);
   const foodEntries = await db
     .collection<Document>(FOOD_ENTRIES_COLLECTION)
     .find({
@@ -394,6 +445,9 @@ export async function POST(request: Request) {
       lastName: telegramUser.last_name
     },
     day: {
+      dateKey,
+      title: formatDateTitle(dateKey, todayKey),
+      label: formatDateLabel(dateKey),
       calories: Math.round(totals.calories),
       calorieTarget: Math.round(targets.calories),
       meals: foodEntries.filter((entry) => getMealType(entry) === "meal").length,

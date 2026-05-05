@@ -579,6 +579,9 @@ footer nav a:hover {
 }
 
 .dashboardHero > div:first-child {
+  display: grid;
+  align-content: start;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -639,6 +642,44 @@ footer nav a:hover {
   color: var(--muted);
   font-size: 13px;
   font-weight: 720;
+}
+
+.daySwitcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.daySwitcher .eyebrow {
+  margin: 0;
+}
+
+.daySwitcher button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.daySwitcher button:hover:not(:disabled) {
+  background: #ebe6de;
+  color: var(--ink);
+}
+
+.daySwitcher button:disabled {
+  cursor: default;
+  opacity: 0.3;
 }
 
 .caloriePanel {

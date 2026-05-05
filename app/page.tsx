@@ -32,6 +32,9 @@ type DashboardData = {
     lastName?: string;
   };
   day: {
+    dateKey: string;
+    title: string;
+    label: string;
     calories: number;
     calorieTarget: number;
     meals: number;
@@ -88,6 +91,21 @@ const macroMeta = {
 } as const;
 
 const BOT_URL = "https://t.me/caldetect_bot";
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function shiftDateKey(dateKey: string, deltaDays: number) {
+  const date = new Date(`${dateKey}T12:00:00`);
+  date.setDate(date.getDate() + deltaDays);
+
+  return getLocalDateKey(date);
+}
 
 function ShareIcon() {
   return (
@@ -192,7 +210,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
   context.fillText("CalBot", 72, 96);
   context.font = "700 26px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText("Today", 72, 164);
+  context.fillText(data.day.title, 72, 164);
 
   context.font = "850 66px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#161412";
@@ -279,7 +297,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
   context.textAlign = "left";
 
   const blob = await canvasToBlob(canvas);
-  return new File([blob], "calbot-today.png", { type: "image/png" });
+  return new File([blob], `calbot-${data.day.dateKey}.png`, { type: "image/png" });
 }
 
 function getDisplayName(user?: TelegramUser) {
@@ -425,11 +443,25 @@ function Landing() {
   );
 }
 
-function Dashboard({ data }: { data: DashboardData }) {
+function Dashboard({
+  data,
+  selectedDate,
+  isLoading,
+  error,
+  onDateChange
+}: {
+  data: DashboardData;
+  selectedDate: string;
+  isLoading: boolean;
+  error: string;
+  onDateChange: (date: string) => void;
+}) {
   const [lastAction, setLastAction] = useState("");
   const [shareStatus, setShareStatus] = useState<"idle" | "sharing" | "sent" | "saved" | "error">("idle");
   const [shareError, setShareError] = useState("");
   const day = data.day;
+  const todayKey = getLocalDateKey();
+  const canGoForward = selectedDate < todayKey;
   const caloriesLeft = Math.max(day.calorieTarget - day.calories, 0);
   const calorieProgress = percent(day.calories, day.calorieTarget);
   const user = {
@@ -457,6 +489,7 @@ function Dashboard({ data }: { data: DashboardData }) {
         formData.append("calories", String(day.calories));
         formData.append("calorieTarget", String(day.calorieTarget));
         formData.append("meals", String(day.meals));
+        formData.append("dayTitle", day.title);
 
         const response = await fetch("/api/dashboard/share", {
           method: "POST",
@@ -494,8 +527,8 @@ function Dashboard({ data }: { data: DashboardData }) {
 
       const shareData = {
         files: [file],
-        title: "CalBot today",
-        text: "My CalBot day"
+        title: `CalBot ${day.title.toLowerCase()}`,
+        text: `My CalBot ${day.title.toLowerCase()}`
       };
 
       if (navigator.canShare?.(shareData) && navigator.share) {
@@ -544,7 +577,25 @@ function Dashboard({ data }: { data: DashboardData }) {
 
         <div className="dashboardHero">
           <div>
-            <p className="eyebrow">Today</p>
+            <div className="daySwitcher" aria-label="Select dashboard day">
+              <button
+                aria-label="Previous day"
+                disabled={isLoading}
+                onClick={() => onDateChange(shiftDateKey(selectedDate, -1))}
+                type="button"
+              >
+                ‹
+              </button>
+              <p className="eyebrow">{day.title}</p>
+              <button
+                aria-label="Next day"
+                disabled={isLoading || !canGoForward}
+                onClick={() => onDateChange(shiftDateKey(selectedDate, 1))}
+                type="button"
+              >
+                ›
+              </button>
+            </div>
             <h1 id="dashboard-title">{userTitle}</h1>
           </div>
           <div className="mealCounter" aria-label="Meal count">
@@ -553,7 +604,7 @@ function Dashboard({ data }: { data: DashboardData }) {
           </div>
         </div>
 
-        <section className="caloriePanel" aria-label="Calories for today">
+        <section className="caloriePanel" aria-label={`Calories for ${day.title}`}>
           <div className="calorieSummary">
             <div>
               <span>🔥 Calories</span>
@@ -615,6 +666,12 @@ function Dashboard({ data }: { data: DashboardData }) {
         {lastAction ? (
           <p className="dashboardHint">Action sent: {lastAction}</p>
         ) : null}
+        {isLoading ? (
+          <p className="dashboardHint">Loading {selectedDate}...</p>
+        ) : null}
+        {error ? (
+          <p className="dashboardHint errorHint">{error}</p>
+        ) : null}
         {shareStatus === "saved" ? (
           <p className="dashboardHint">Image saved. Send it in Telegram or Instagram.</p>
         ) : null}
@@ -634,6 +691,26 @@ function Dashboard({ data }: { data: DashboardData }) {
 export default function Home() {
   const [view, setView] = useState<"checking" | "landing" | "dashboard">("checking");
   const [dashboardData, setDashboardData] = useState<DashboardData | undefined>();
+  const [initData, setInitData] = useState("");
+  const [selectedDate, setSelectedDate] = useState(getLocalDateKey);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState("");
+
+  async function loadDashboardData(nextInitData: string, date: string) {
+    const response = await fetch("/api/dashboard", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ initData: nextInitData, date })
+    });
+
+    if (!response.ok) {
+      throw new Error("Dashboard request failed");
+    }
+
+    return (await response.json()) as DashboardData;
+  }
 
   useEffect(() => {
     let isActive = true;
@@ -650,26 +727,16 @@ export default function Home() {
 
       webApp.ready?.();
       webApp.expand?.();
+      setInitData(webApp.initData);
 
       try {
-        const response = await fetch("/api/dashboard", {
-          method: "POST",
-          headers: {
-            "content-type": "application/json"
-          },
-          body: JSON.stringify({ initData: webApp.initData })
-        });
+        const data = await loadDashboardData(webApp.initData, selectedDate);
 
         if (!isActive) {
           return;
         }
 
-        if (!response.ok) {
-          setView("landing");
-          return;
-        }
-
-        setDashboardData((await response.json()) as DashboardData);
+        setDashboardData(data);
         setView("dashboard");
       } catch {
         if (isActive) {
@@ -685,12 +752,42 @@ export default function Home() {
     };
   }, []);
 
+  async function handleDateChange(date: string) {
+    const todayKey = getLocalDateKey();
+    const nextDate = date > todayKey ? todayKey : date;
+    const previousDate = selectedDate;
+    setSelectedDate(nextDate);
+
+    if (!initData || nextDate === selectedDate) {
+      return;
+    }
+
+    setIsDashboardLoading(true);
+    setDashboardError("");
+    try {
+      setDashboardData(await loadDashboardData(initData, nextDate));
+    } catch {
+      setSelectedDate(previousDate);
+      setDashboardError("Could not load this day.");
+    } finally {
+      setIsDashboardLoading(false);
+    }
+  }
+
   if (view === "checking") {
     return <main className="routeLoader" aria-label="Loading" />;
   }
 
   if (view === "dashboard" && dashboardData) {
-    return <Dashboard data={dashboardData} />;
+    return (
+      <Dashboard
+        data={dashboardData}
+        selectedDate={selectedDate}
+        isLoading={isDashboardLoading}
+        error={dashboardError}
+        onDateChange={handleDateChange}
+      />
+    );
   }
 
   return <Landing />;

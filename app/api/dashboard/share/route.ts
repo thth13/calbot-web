@@ -9,10 +9,11 @@ function createShareCaption(formData: FormData) {
   const calories = String(formData.get("calories") ?? "0");
   const calorieTarget = String(formData.get("calorieTarget") ?? "0");
   const meals = String(formData.get("meals") ?? "0");
+  const dayTitle = String(formData.get("dayTitle") ?? "today").toLowerCase();
 
   return [
     `${userTitle} in CalBot`,
-    `${calories} / ${calorieTarget} kcal today`,
+    `${calories} / ${calorieTarget} kcal ${dayTitle}`,
     `${meals} meals tracked`,
     "",
     "Track calories in Telegram: https://t.me/caldetect_bot"
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
     id: shareImageId,
     photo_url: photoUrl,
     thumbnail_url: photoUrl,
-    title: "CalBot today",
+    title: "CalBot day",
     description: "Daily calories and macros",
     caption: createShareCaption(formData)
   };
