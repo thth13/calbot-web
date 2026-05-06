@@ -10,6 +10,7 @@ type TelegramWebApp = {
 
 type HistoryItem = {
   id: string;
+  dateKey: string;
   time: string;
   name: string;
   mealType: "meal" | "snack";
@@ -32,6 +33,7 @@ type HistoryData = {
 };
 
 type EditDraft = {
+  date: string;
   name: string;
   mealType: "meal" | "snack";
   kcal: string;
@@ -65,6 +67,7 @@ function waitForTelegramWebApp(timeoutMs = 1500) {
 
 function toDraft(item: HistoryItem): EditDraft {
   return {
+    date: item.dateKey,
     name: item.name,
     mealType: item.mealType,
     kcal: String(item.kcal),
@@ -153,6 +156,15 @@ function HistoryContent({
                                 required
                                 value={editDraft.name}
                                 onChange={(event) => onChangeDraft({ ...editDraft, name: event.target.value })}
+                              />
+                            </label>
+                            <label>
+                              <span>Date</span>
+                              <input
+                                required
+                                type="date"
+                                value={editDraft.date}
+                                onChange={(event) => onChangeDraft({ ...editDraft, date: event.target.value })}
                               />
                             </label>
                             <fieldset className="foodTypeToggle">
@@ -348,6 +360,7 @@ export default function HistoryClient() {
   const [pendingId, setPendingId] = useState("");
   const [actionError, setActionError] = useState("");
   const [editDraft, setEditDraft] = useState<EditDraft>({
+    date: "",
     name: "",
     mealType: "meal",
     kcal: "",
@@ -444,6 +457,7 @@ export default function HistoryClient() {
         },
         body: JSON.stringify({
           initData,
+          date: editDraft.date,
           foodDescription: editDraft.name,
           mealType: editDraft.mealType,
           calories: editDraft.kcal,

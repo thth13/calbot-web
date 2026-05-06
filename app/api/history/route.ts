@@ -31,6 +31,7 @@ type HistoryResponse = {
     total: string;
     items: Array<{
       id: string;
+      dateKey: string;
       time: string;
       name: string;
       mealType: "meal" | "snack";
@@ -238,6 +239,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
 
     day.items.push({
       id: entry._id?.toString() ?? `${dateKey}-${day.items.length}`,
+      dateKey,
       time: formatTime(createdAt),
       name: readString(entry, ["foodDescription", "name", "title", "foodName", "description", "text"], "Untitled food"),
       mealType: getMealType(entry),

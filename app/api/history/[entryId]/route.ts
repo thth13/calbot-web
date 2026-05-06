@@ -10,6 +10,7 @@ type UserDocument = Document & {
 
 const USERS_COLLECTION = process.env.MONGODB_USERS_COLLECTION ?? "users";
 const FOOD_ENTRIES_COLLECTION = process.env.MONGODB_FOOD_ENTRIES_COLLECTION ?? "foodentries";
+const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
 
 function getUserFilter(telegramUser: TelegramUser): Filter<UserDocument> {
   const id = telegramUser.id;
@@ -81,6 +82,111 @@ function parseMealType(value: unknown) {
   return undefined;
 }
 
+function readValue(source: unknown, paths: string[]) {
+  for (const path of paths) {
+    const value = path.split(".").reduce<unknown>((current, key) => {
+      if (current && typeof current === "object" && key in current) {
+        return (current as Record<string, unknown>)[key];
+      }
+
+      return undefined;
+    }, source);
+
+    if (value !== undefined && value !== null) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function readDate(source: unknown) {
+  const raw =
+    (source && typeof source === "object"
+      ? readValue(source, ["createdAt", "created_at", "date", "day", "timestamp", "addedAt"])
+      : undefined) ?? source;
+
+  if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
+    return raw;
+  }
+
+  if (typeof raw === "number" || typeof raw === "string") {
+    const date = new Date(raw);
+    if (!Number.isNaN(date.getTime())) {
+      return date;
+    }
+  }
+
+  return undefined;
+}
+
+function parseDateKey(value: unknown) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return undefined;
+  }
+
+  const date = new Date(`${value}T12:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    return undefined;
+  }
+
+  return value;
+}
+
+function getTimeZoneOffset(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const asUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second)
+  );
+
+  return asUtc - date.getTime();
+}
+
+function getLocalTimeParts(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+  return {
+    hour: Number(values.hour),
+    minute: Number(values.minute),
+    second: Number(values.second),
+    millisecond: date.getMilliseconds()
+  };
+}
+
+function buildDateWithExistingLocalTime(dateKey: string, existingDate: Date) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const time = getLocalTimeParts(existingDate, TIME_ZONE);
+  const localTimeAsUtc = new Date(
+    Date.UTC(year, month - 1, day, time.hour, time.minute, time.second, time.millisecond)
+  );
+  const firstPass = new Date(localTimeAsUtc.getTime() - getTimeZoneOffset(localTimeAsUtc, TIME_ZONE));
+
+  return new Date(localTimeAsUtc.getTime() - getTimeZoneOffset(firstPass, TIME_ZONE));
+}
+
 async function getAuthorizedContext(request: Request) {
   const botToken = getTelegramBotToken();
   if (!botToken) {
@@ -141,6 +247,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ entry
 
   const foodDescription = typeof authorized.body.foodDescription === "string" ? authorized.body.foodDescription.trim() : "";
   const mealType = parseMealType(authorized.body.mealType);
+  const dateKey = parseDateKey(authorized.body.date);
   const calories = parseFiniteNumber(authorized.body.calories);
   const protein = parseFiniteNumber(authorized.body.protein);
   const fat = parseFiniteNumber(authorized.body.fat);
@@ -149,25 +256,37 @@ export async function PATCH(request: Request, context: { params: Promise<{ entry
   if (
     !foodDescription ||
     !mealType ||
+    !dateKey ||
     calories === undefined ||
     protein === undefined ||
     fat === undefined ||
     carbs === undefined
   ) {
-    return NextResponse.json({ error: "Food description and nutrition values are required" }, { status: 400 });
+    return NextResponse.json({ error: "Food description, date, and nutrition values are required" }, { status: 400 });
   }
 
   if ([calories, protein, fat, carbs].some((value) => value < 0)) {
     return NextResponse.json({ error: "Nutrition values cannot be negative" }, { status: 400 });
   }
 
+  const entryFilter = {
+    _id: new ObjectId(entryId),
+    $or: getMealUserConditions(authorized.registeredUser, authorized.telegramUser)
+  };
+  const existingEntry = await authorized.db.collection<Document>(FOOD_ENTRIES_COLLECTION).findOne(entryFilter);
+
+  if (!existingEntry) {
+    return NextResponse.json({ error: "Food entry not found" }, { status: 404 });
+  }
+
+  const existingDate = readDate(existingEntry) ?? new Date();
+  const createdAt = buildDateWithExistingLocalTime(dateKey, existingDate);
+
   const result = await authorized.db.collection<Document>(FOOD_ENTRIES_COLLECTION).updateOne(
-    {
-      _id: new ObjectId(entryId),
-      $or: getMealUserConditions(authorized.registeredUser, authorized.telegramUser)
-    },
+    entryFilter,
     {
       $set: {
+        createdAt,
         foodDescription,
         mealType,
         calories,
