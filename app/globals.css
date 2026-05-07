@@ -687,7 +687,7 @@ footer nav a:hover {
   display: grid;
   gap: 16px;
   padding: 18px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
   background: #fffaf0;
   box-shadow: 6px 6px 0 #ded7cd;
 }
