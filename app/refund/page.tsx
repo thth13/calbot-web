@@ -58,7 +58,23 @@ export default function RefundPolicyPage() {
           </div>
 
           <div>
-            <h2>2. Cancellations</h2>
+            <h2>2. Refund window</h2>
+            <p>
+              Our standard refund request window is 14 calendar days from the date of
+              the transaction. This 14-day window applies to initial subscription
+              purchases and renewal payments, unless a longer mandatory refund or
+              withdrawal right applies under your local consumer protection laws.
+            </p>
+            <p>
+              Submitting a refund request within 14 calendar days does not guarantee a
+              refund. Paddle reviews refund eligibility under Paddle&apos;s Refund Policy,
+              including statutory withdrawal rights, product usage, technical issues,
+              suspected fraud or abuse, and any other applicable legal requirements.
+            </p>
+          </div>
+
+          <div>
+            <h2>3. Cancellations</h2>
             <p>
               You may cancel a subscription at any time through Paddle. Cancellation
               takes effect at the end of the current billing period and prevents future
@@ -67,7 +83,7 @@ export default function RefundPolicyPage() {
           </div>
 
           <div>
-            <h2>3. How to request a refund</h2>
+            <h2>4. How to request a refund</h2>
             <p>
               Request a refund through Paddle using the &quot;View receipt&quot; or
               &quot;Manage subscription&quot; link in your transaction confirmation email, the
@@ -82,7 +98,7 @@ export default function RefundPolicyPage() {
           </div>
 
           <div>
-            <h2>4. Related documents</h2>
+            <h2>5. Related documents</h2>
             <p>
               See also our <Link href="/terms">Terms of Service</Link> and{" "}
               <Link href="/privacy">Privacy Policy</Link>.
