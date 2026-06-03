@@ -60,7 +60,7 @@ const features = [
   ["Photo or text", "Send a meal photo or describe what you ate in plain language."],
   ["Calories and macros", "Get calories, protein, fat, carbs, and the estimate confidence."],
   ["Stats", "Track nutrition trends and spot recurring habits faster."],
-  ["Premium", "Unlimited scans and advanced analytics for consistent tracking."]
+  ["Premium", "Start with a free 3-day trial, then subscribe to keep scanning."]
 ];
 
 const steps = [
@@ -418,8 +418,8 @@ function Landing() {
           <p className="eyebrow">Premium</p>
           <h2>For people who track nutrition every day</h2>
           <p>
-            Premium removes scan limits and unlocks advanced stats. It is built for regular
-            meal logging when you want a clear day-by-day picture.
+            CalBot includes a free 3-day trial. Premium keeps meal scanning active after the
+            trial and unlocks advanced stats for a clear day-by-day picture.
           </p>
         </div>
         <div className="pricing">

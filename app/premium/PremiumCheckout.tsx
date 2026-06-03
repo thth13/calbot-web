@@ -93,7 +93,7 @@ const plans = [
 ] as const;
 
 const benefits = [
-  "Unlimited food recognition",
+  "Keep scanning after the free 3-day trial",
   "Advanced calorie and macro stats",
   "Unlimited nutrition history"
 ];
