@@ -37,9 +37,11 @@ export async function POST(request: Request) {
 
   const plan = typeof body.plan === "string" ? planNames[body.plan] : undefined;
   const message = [
-    "Payment complete. Thank you for buying CalBot Premium.",
-    plan ? `Plan: ${plan}.` : undefined,
-    "Premium will activate after the payment is processed."
+    "🎉 Payment complete!",
+    "Thank you for buying CalBot Premium 💎",
+    plan ? `📅 Plan: ${plan}` : undefined,
+    "✨ Premium will activate after the payment is processed.",
+    "🚀 Enjoy your upgraded CalBot experience!"
   ]
     .filter(Boolean)
     .join("\n");
