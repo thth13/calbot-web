@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type PaddleEnvironment = "sandbox" | "production";
 type PaddleEvent = {
@@ -104,6 +104,8 @@ export default function PremiumCheckout() {
   const [isTelegramSession, setIsTelegramSession] = useState(true);
   const [checkoutState, setCheckoutState] = useState<"idle" | "opening" | "completed">("idle");
   const [checkoutError, setCheckoutError] = useState("");
+  const selectedPlanIdRef = useRef(selectedPlanId);
+  const purchaseMessageSentRef = useRef(false);
 
   const selectedPlan = useMemo(
     () => plans.find((plan) => plan.id === selectedPlanId) ?? plans[0],
@@ -111,6 +113,10 @@ export default function PremiumCheckout() {
   );
 
   const isConfigured = Boolean(paddleToken && selectedPlan.priceId);
+
+  useEffect(() => {
+    selectedPlanIdRef.current = selectedPlanId;
+  }, [selectedPlanId]);
 
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
@@ -140,6 +146,7 @@ export default function PremiumCheckout() {
       eventCallback(event) {
         if (event.name === "checkout.completed") {
           setCheckoutState("completed");
+          void notifyTelegramPurchaseSuccess();
         }
       },
       checkout: {
@@ -180,6 +187,31 @@ export default function PremiumCheckout() {
         lastName?: string;
       };
     };
+  }
+
+  async function notifyTelegramPurchaseSuccess() {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData || purchaseMessageSentRef.current) {
+      return;
+    }
+
+    purchaseMessageSentRef.current = true;
+
+    const response = await fetch("/api/telegram/purchase-success", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        initData,
+        plan: selectedPlanIdRef.current
+      })
+    });
+
+    if (!response.ok) {
+      purchaseMessageSentRef.current = false;
+      console.error("Could not send Telegram purchase message");
+    }
   }
 
   async function openCheckout() {

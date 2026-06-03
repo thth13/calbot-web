@@ -8,6 +8,12 @@ type UserDocument = Document & {
   telegramId?: number | string;
   username?: string;
   firstName?: string;
+  isPremium?: boolean;
+  premiumUntil?: Date | string;
+  premium?: {
+    active?: boolean;
+    expiresAt?: Date | string;
+  };
   dailyCalorieGoal?: number;
   dailyProteinGoal?: number;
   dailyCarbsGoal?: number;
@@ -33,6 +39,7 @@ type DashboardResponse = {
     username?: string;
     firstName?: string;
     lastName?: string;
+    isPremium: boolean;
   };
   day: {
     dateKey: string;
@@ -326,6 +333,17 @@ function getTargets(user: UserDocument) {
   };
 }
 
+function getPremiumExpiresAt(user: UserDocument) {
+  return readDate(readValue(user, ["premium.expiresAt", "premiumUntil"]));
+}
+
+function isUserPremiumActive(user: UserDocument, now = new Date()) {
+  const hasActiveFlag = user.premium?.active === true || user.isPremium === true;
+  const expiresAt = getPremiumExpiresAt(user);
+
+  return hasActiveFlag && Boolean(expiresAt && expiresAt.getTime() > now.getTime());
+}
+
 function getMealNutrition(meal: FoodEntryDocument) {
   return {
     calories: readNumber(meal, ["calories", "kcal", "nutrition.calories", "macros.calories", "totalCalories"]),
@@ -442,7 +460,8 @@ export async function POST(request: Request) {
       id: telegramUser.id,
       username: telegramUser.username,
       firstName: telegramUser.first_name,
-      lastName: telegramUser.last_name
+      lastName: telegramUser.last_name,
+      isPremium: isUserPremiumActive(registeredUser)
     },
     day: {
       dateKey,
