@@ -79,15 +79,15 @@ const plans = [
   {
     id: "monthly",
     title: "Monthly",
-    price: "$9.99",
+    price: "$4.99",
     note: "Flexible access",
     priceId: process.env.NEXT_PUBLIC_PADDLE_MONTHLY_PRICE_ID
   },
   {
     id: "yearly",
     title: "Yearly",
-    price: "$99",
-    note: "2 months cheaper",
+    price: "$39.99",
+    note: "Best value",
     priceId: process.env.NEXT_PUBLIC_PADDLE_YEARLY_PRICE_ID
   }
 ] as const;

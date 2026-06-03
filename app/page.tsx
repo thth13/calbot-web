@@ -425,11 +425,11 @@ function Landing() {
         <div className="pricing">
           <div className="priceRow">
             <span>Monthly</span>
-            <strong>$9.99</strong>
+            <strong>$4.99</strong>
           </div>
           <div className="priceRow highlighted">
             <span>Yearly</span>
-            <strong>$99</strong>
+            <strong>$39.99</strong>
           </div>
           <a className="primaryAction full" href={BOT_URL} target="_blank" rel="noreferrer">
             Choose a plan in Telegram
