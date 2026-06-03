@@ -381,13 +381,6 @@ export async function POST(request: Request) {
     userFilter,
     {
       $set: set,
-      $unset: {
-        isPremium: "",
-        premiumPlan: "",
-        premiumStatus: "",
-        premiumUntil: "",
-        premiumUpdatedAt: ""
-      },
       $setOnInsert: {
         createdAt: now
       }

@@ -8,8 +8,6 @@ type UserDocument = Document & {
   telegramId?: number | string;
   username?: string;
   firstName?: string;
-  isPremium?: boolean;
-  premiumUntil?: Date | string;
   premium?: {
     active?: boolean;
     expiresAt?: Date | string;
@@ -334,14 +332,17 @@ function getTargets(user: UserDocument) {
 }
 
 function getPremiumExpiresAt(user: UserDocument) {
-  return readDate(readValue(user, ["premium.expiresAt", "premiumUntil"]));
+  return readDate(readValue(user, ["premium.expiresAt"]));
 }
 
 function isUserPremiumActive(user: UserDocument, now = new Date()) {
-  const hasActiveFlag = user.premium?.active === true || user.isPremium === true;
+  if (user.premium?.active !== true) {
+    return false;
+  }
+
   const expiresAt = getPremiumExpiresAt(user);
 
-  return hasActiveFlag && Boolean(expiresAt && expiresAt.getTime() > now.getTime());
+  return !expiresAt || expiresAt.getTime() > now.getTime();
 }
 
 function getMealNutrition(meal: FoodEntryDocument) {
