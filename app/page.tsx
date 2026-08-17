@@ -391,7 +391,7 @@ function Landing() {
           <div className="phoneMockup">
             <div className="phoneSpeaker" aria-hidden="true" />
             <img
-              src="/phone-main.png"
+              src="/phone-main.PNG"
               alt="Скріншот Telegram-бота CalBot на телефоні"
             />
           </div>
