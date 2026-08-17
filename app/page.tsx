@@ -57,16 +57,16 @@ declare global {
 }
 
 const features = [
-  ["Photo or text", "Send a meal photo or describe what you ate in plain language."],
-  ["Calories and macros", "Get calories, protein, fat, carbs, and the estimate confidence."],
-  ["Stats", "Track nutrition trends and spot recurring habits faster."],
-  ["Premium", "Start with a free 3-day trial, then subscribe to keep scanning."]
+  ["Фото або текст", "Надішліть фото страви або опишіть звичайними словами, що ви з’їли."],
+  ["Калорії та макронутрієнти", "Дізнайтеся кількість калорій, білків, жирів, вуглеводів і точність оцінки."],
+  ["Статистика", "Відстежуйте зміни в харчуванні та швидше помічайте повторювані звички."],
+  ["Преміум", "Почніть із безкоштовного 3-денного пробного періоду, а потім оформіть підписку, щоб і надалі сканувати страви."]
 ];
 
 const steps = [
-  "Open CalBot in Telegram",
-  "Send a food photo or description",
-  "Get the estimate and save your day"
+  "Відкрийте CalBot у Telegram",
+  "Надішліть фото або опис страви",
+  "Отримайте оцінку та збережіть результати дня"
 ];
 
 const macroMeta = {
@@ -361,37 +361,38 @@ function Landing() {
           <span className="brandMark">C</span>
           <span>CalBot</span>
         </a>
-        <nav aria-label="Main navigation">
-          <a href="#features">Features</a>
-          <a href="#premium">Premium</a>
-          <a href="#start">Start</a>
+        <nav aria-label="Головна навігація">
+          <a href="#features">Можливості</a>
+          <a href="#statistics">Статистика</a>
+          <a href="#premium">Преміум</a>
+          <a href="#start">Почати</a>
         </nav>
       </header>
 
       <section className="hero" id="top">
         <div className="heroCopy">
-          <p className="eyebrow">Telegram bot · AI nutrition tracker</p>
-          <h1>Count calories right in Telegram</h1>
+          <p className="eyebrow">Telegram-бот · AI-трекер харчування</p>
+          <h1>Рахуйте калорії просто в Telegram</h1>
           <p className="lead">
-            CalBot analyzes food photos or text descriptions and returns a clear estimate:
-            calories, protein, fat, carbs, and confidence.
+            CalBot аналізує фото страв або текстові описи й надає зрозумілу оцінку:
+            калорії, білки, жири, вуглеводи та рівень точності.
           </p>
           <div className="actions">
             <a className="primaryAction" href={BOT_URL} target="_blank" rel="noreferrer">
-              Open the bot
+              Відкрити бота
             </a>
             <a className="secondaryAction" href="#features">
-              See features
+              Переглянути можливості
             </a>
           </div>
         </div>
 
-        <div className="heroVisual" aria-label="CalBot phone screenshot">
+        <div className="heroVisual" aria-label="Скріншот CalBot на телефоні">
           <div className="phoneMockup">
             <div className="phoneSpeaker" aria-hidden="true" />
             <img
-              src="/phone-screenshot.png"
-              alt="CalBot Telegram bot screenshot on a phone"
+              src="/phone-main.png"
+              alt="Скріншот Telegram-бота CalBot на телефоні"
             />
           </div>
         </div>
@@ -399,8 +400,8 @@ function Landing() {
 
       <section className="section" id="features">
         <div className="sectionHeader">
-          <p className="eyebrow">What the bot does</p>
-          <h2>Less manual entry, more clarity</h2>
+          <p className="eyebrow">Що вміє бот</p>
+          <h2>Менше ручного введення — більше ясності</h2>
         </div>
         <div className="featureGrid">
           {features.map(([title, description]) => (
@@ -413,34 +414,84 @@ function Landing() {
         </div>
       </section>
 
+      <section className="section statisticsSection" id="statistics">
+        <div className="sectionHeader statisticsHeader">
+          <p className="eyebrow">Ваш прогрес</p>
+          <h2>Уся статистика — перед очима</h2>
+          <p>
+            Перевіряйте баланс протягом дня та дивіться на харчування в динаміці, щоб
+            краще розуміти свої звички й упевнено рухатися до мети.
+          </p>
+        </div>
+
+        <div className="statisticsGrid">
+          <article className="statisticsCard dailyStatisticsCard">
+            <div className="statisticsCopy">
+              <span className="statisticsNumber">01</span>
+              <h3>Поточний день у деталях</h3>
+              <p>
+                Одразу бачте, скільки калорій уже спожито й скільки залишилося до
+                денної норми. CalBot також показує кількість прийомів їжі та прогрес за
+                білками, жирами й вуглеводами.
+              </p>
+            </div>
+            <div className="statisticsPhone">
+              <img
+                src="/phone-profile.PNG"
+                alt="Статистика CalBot за поточний день із калоріями та макронутрієнтами"
+              />
+            </div>
+          </article>
+
+          <article className="statisticsCard weeklyStatisticsCard">
+            <div className="statisticsCopy">
+              <span className="statisticsNumber">02</span>
+              <h3>Тиждень у зрозумілій динаміці</h3>
+              <p>
+                Порівнюйте дні на наочному графіку, стежте за середньою калорійністю та
+                дізнавайтеся, як часто ви потрапляєте в ціль. Так легше помітити тенденції
+                й скоригувати раціон без зайвих підрахунків.
+              </p>
+            </div>
+            <div className="statisticsPhone">
+              <img
+                src="/phone-stats.PNG"
+                alt="Тижнева статистика CalBot із графіком калорійності"
+              />
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className="splitSection" id="premium">
         <div>
-          <p className="eyebrow">Premium</p>
-          <h2>For people who track nutrition every day</h2>
+          <p className="eyebrow">Преміум</p>
+          <h2>Для тих, хто стежить за харчуванням щодня</h2>
           <p>
-            CalBot includes a free 3-day trial. Premium keeps meal scanning active after the
-            trial and unlocks advanced stats for a clear day-by-day picture.
+            CalBot пропонує безкоштовний 3-денний пробний період. Преміум дає змогу
+            сканувати страви після його завершення та відкриває розширену статистику за
+            кожен день.
           </p>
         </div>
         <div className="pricing">
           <div className="priceRow">
-            <span>Monthly</span>
+            <span>Щомісяця</span>
             <strong>$4.99</strong>
           </div>
           <div className="priceRow highlighted">
-            <span>Yearly</span>
+            <span>Щороку</span>
             <strong>$39.99</strong>
           </div>
           <a className="primaryAction full" href={BOT_URL} target="_blank" rel="noreferrer">
-            Choose a plan in Telegram
+            Обрати тариф у Telegram
           </a>
         </div>
       </section>
 
       <section className="section compact" id="start">
         <div className="sectionHeader">
-          <p className="eyebrow">How to start</p>
-          <h2>Three quick steps</h2>
+          <p className="eyebrow">Як почати</p>
+          <h2>Три прості кроки</h2>
         </div>
         <ol className="steps">
           {steps.map((step) => (
@@ -452,12 +503,12 @@ function Landing() {
       <footer>
         <div>
           <span>CalBot</span>
-          <span>AI calorie tracker for Telegram</span>
+          <span>AI-трекер калорій для Telegram</span>
         </div>
-        <nav aria-label="Legal links">
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/refund">Refund</a>
+        <nav aria-label="Юридичні посилання">
+          <a href="/terms">Умови</a>
+          <a href="/privacy">Конфіденційність</a>
+          <a href="/refund">Повернення коштів</a>
         </nav>
       </footer>
     </main>

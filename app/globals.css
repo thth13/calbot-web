@@ -402,6 +402,91 @@ h3 {
   box-shadow: 20px 0 0 var(--blue), 40px 0 0 var(--gold);
 }
 
+.statisticsSection {
+  padding-top: 72px;
+}
+
+.statisticsHeader {
+  max-width: 780px;
+}
+
+.statisticsHeader > p:last-child {
+  max-width: 680px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.statisticsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.statisticsCard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 28px;
+  min-width: 0;
+  padding: 28px 28px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dailyStatisticsCard {
+  background: #eef6f0;
+}
+
+.weeklyStatisticsCard {
+  background: #fff9ea;
+}
+
+.statisticsCopy {
+  max-width: 470px;
+}
+
+.statisticsNumber {
+  display: inline-flex;
+  margin-bottom: 28px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.statisticsCopy h3 {
+  margin-bottom: 12px;
+  font-size: clamp(25px, 3vw, 34px);
+}
+
+.statisticsCopy p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.statisticsPhone {
+  align-self: end;
+  justify-self: center;
+  width: min(330px, 88%);
+  padding: 10px 10px 0;
+  border: 1px solid #0f0e0c;
+  border-bottom: 0;
+  border-radius: 34px 34px 0 0;
+  background: #161412;
+  box-shadow: 10px 0 0 rgb(22 20 18 / 10%);
+}
+
+.statisticsPhone img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 25px 25px 0 0;
+}
+
 .splitSection {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
@@ -2081,6 +2166,17 @@ footer nav a:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .statisticsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statisticsCard {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    padding-left: 32px;
+  }
+
 }
 
 @media (max-width: 640px) {
@@ -2117,6 +2213,21 @@ footer nav a:hover {
   .featureGrid,
   .steps {
     grid-template-columns: 1fr;
+  }
+
+  .statisticsCard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 24px;
+    padding: 22px 20px 0;
+  }
+
+  .statisticsNumber {
+    margin-bottom: 20px;
+  }
+
+  .statisticsPhone {
+    width: min(310px, 94%);
   }
 
   .feature {
