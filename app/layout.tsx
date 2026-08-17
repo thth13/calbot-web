@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
+import TelegramActivityTracker from "./TelegramActivityTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
       </head>
       <body>
+        <TelegramActivityTracker />
         {children}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-18YQT06FRZ"
