@@ -11,8 +11,7 @@ type ActivityEvent = {
   visitorId: string;
 };
 
-const CLICKABLE_SELECTOR =
-  "button, [role='button'], a.primaryAction, a.secondaryAction, a.quickAction";
+const CLICKABLE_SELECTOR = "button, [role='button'], a";
 
 function createVisitorId() {
   if (typeof crypto.randomUUID === "function") {
@@ -73,6 +72,10 @@ export default function TelegramActivityTracker() {
   const reachedBottomRef = useRef(false);
 
   useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      return;
+    }
+
     if (!visitorIdRef.current) {
       visitorIdRef.current = getVisitorId();
     }

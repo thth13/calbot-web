@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import { getMongoDb } from "../../../lib/mongodb";
+import {
+  ADMIN_ACTIVITY_COLLECTION,
+  getAdminTelegramIds,
+  type AdminActivityDocument
+} from "../../../lib/admin-notifications";
 import { sendTelegramMessage } from "../../../lib/telegram";
 
 export const runtime = "nodejs";
@@ -70,15 +76,6 @@ function hasInvalidOrigin(request: Request) {
   }
 }
 
-function getAdminTelegramIds() {
-  const configuredIds = process.env.ADMIN_TELEGRAM_IDS;
-  if (!configuredIds) {
-    return [];
-  }
-
-  return Array.from(new Set(configuredIds.match(/-?\d+/g) ?? []));
-}
-
 export async function POST(request: Request) {
   if (hasInvalidOrigin(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -123,10 +120,46 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join("\n");
 
+  let activityId;
+  try {
+    const db = await getMongoDb();
+    const result = await db.collection<AdminActivityDocument>(ADMIN_ACTIVITY_COLLECTION).insertOne({
+      type,
+      path,
+      ...(label ? { label } : {}),
+      ...(referrer ? { referrer } : {}),
+      visitorId,
+      ip: clientIp,
+      createdAt: new Date(),
+      delivered: 0,
+      deliveryStatus: "pending"
+    });
+    activityId = result.insertedId;
+  } catch (error) {
+    console.error("Could not save admin activity", error);
+  }
+
   const results = await Promise.allSettled(
     adminTelegramIds.map((chatId) => sendTelegramMessage(botToken, chatId, message))
   );
   const delivered = results.filter((result) => result.status === "fulfilled").length;
+
+  if (activityId) {
+    try {
+      const db = await getMongoDb();
+      await db.collection<AdminActivityDocument>(ADMIN_ACTIVITY_COLLECTION).updateOne(
+        { _id: activityId },
+        {
+          $set: {
+            delivered,
+            deliveryStatus: delivered > 0 ? "sent" : "failed"
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Could not update admin activity delivery status", error);
+    }
+  }
 
   if (delivered === 0) {
     return NextResponse.json(

@@ -13,6 +13,363 @@
   --red: #d64f45;
 }
 
+.adminStatsPage {
+  min-height: 100vh;
+  padding: 18px 0 32px;
+  background: #f6f7f2;
+}
+
+.adminStatsShell {
+  display: grid;
+  gap: 14px;
+  width: min(1180px, calc(100% - 28px));
+  margin: 0 auto;
+}
+
+.adminSummary article,
+.adminActivityPanel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
+}
+
+.adminSearch button,
+.adminFilters button,
+.adminPagination button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.adminSummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminSummary article {
+  display: grid;
+  gap: 8px;
+  min-height: 112px;
+  padding: 16px;
+}
+
+.adminSummary span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.adminSummary strong {
+  color: var(--ink);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.adminActivityPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.adminActivityHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+}
+
+.adminActivityHeader h2 {
+  margin-bottom: 6px;
+  font-size: 26px;
+}
+
+.adminActivityHeader p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.adminSearch {
+  display: flex;
+  gap: 7px;
+  width: min(390px, 100%);
+}
+
+.adminSearch input {
+  min-width: 0;
+  flex: 1;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.adminSearch input:focus {
+  border-color: var(--ink);
+  outline: 2px solid color-mix(in srgb, var(--blue) 22%, transparent);
+}
+
+.adminSearch button {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.adminFilters {
+  display: flex;
+  gap: 7px;
+  padding: 0 20px 16px;
+  overflow-x: auto;
+}
+
+.adminFilters button {
+  min-height: 34px;
+  white-space: nowrap;
+}
+
+.adminFilters button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.adminTableWrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  transition: opacity 160ms ease;
+}
+
+.adminTableWrap.isLoading {
+  opacity: 0.55;
+}
+
+.adminActivityTable {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.adminActivityTable th,
+.adminActivityTable td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.adminActivityTable th {
+  background: #f1eee8;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.adminActivityTable tbody tr:hover {
+  background: #fffcf5;
+}
+
+.adminDateCell {
+  width: 150px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.adminActionCell {
+  display: grid;
+  gap: 4px;
+  min-width: 240px;
+  max-width: 420px;
+}
+
+.adminActionCell strong,
+.adminActionCell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminActionCell span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.eventBadge,
+.deliveryBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.eventBadge.visit {
+  background: #eaf2ff;
+  color: #245fa9;
+}
+
+.eventBadge.click {
+  background: #fff2d9;
+  color: #865e13;
+}
+
+.eventBadge.bottom {
+  background: #edf9ef;
+  color: #2f6f3c;
+}
+
+.eventBadge.bot_started {
+  background: #eee9ff;
+  color: #5b3ba8;
+}
+
+.eventBadge.quiz_completed {
+  background: #e5f7f4;
+  color: #176c61;
+}
+
+.deliveryBadge.sent {
+  background: #edf9ef;
+  color: #2f6f3c;
+}
+
+.deliveryBadge.pending {
+  background: #fff7d7;
+  color: #6f5713;
+}
+
+.deliveryBadge.failed {
+  background: #fff0ed;
+  color: #94362a;
+}
+
+.adminDeleteButton {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #e0a39d;
+  border-radius: 8px;
+  background: #fff0ed;
+  color: #94362a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.adminDeleteButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.adminState {
+  display: grid;
+  gap: 6px;
+  min-height: 180px;
+  place-content: center;
+  padding: 32px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.adminState strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.adminState p {
+  max-width: 440px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.adminStateError strong {
+  color: var(--red);
+}
+
+.adminPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.adminPagination div {
+  display: flex;
+  gap: 7px;
+}
+
+.adminPagination button {
+  width: 38px;
+  padding: 0;
+  font-size: 17px;
+}
+
+.adminPagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+@media (max-width: 720px) {
+  .adminStatsPage {
+    padding-top: 12px;
+  }
+
+  .adminStatsShell {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .adminActivityHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .adminSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adminSummary article {
+    min-height: 96px;
+  }
+
+  .adminActivityHeader {
+    padding: 16px;
+  }
+
+  .adminSearch {
+    width: 100%;
+  }
+
+  .adminFilters {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .adminPagination {
+    align-items: flex-start;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
