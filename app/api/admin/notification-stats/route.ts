@@ -23,6 +23,7 @@ type StatsRequest = {
   page?: unknown;
   type?: unknown;
   query?: unknown;
+  activitySource?: unknown;
 };
 
 type DeleteRequest = {
@@ -83,10 +84,20 @@ export async function POST(request: Request) {
     ? (body.type as AdminEventType)
     : undefined;
   const query = typeof body?.query === "string" ? body.query.trim().slice(0, 100) : "";
+  const activitySource =
+    body?.activitySource === "browser" ||
+    body?.activitySource === "telegram_webapp" ||
+    body?.activitySource === "telegram_bot"
+      ? body.activitySource
+      : undefined;
   const filter: Document = {};
 
   if (type) {
     filter.type = type;
+  }
+
+  if (activitySource) {
+    filter.activitySource = activitySource;
   }
 
   if (query) {
@@ -98,7 +109,10 @@ export async function POST(request: Request) {
       { visitorId: pattern },
       { ip: pattern },
       { username: pattern },
-      { firstName: pattern }
+      { firstName: pattern },
+      { lastName: pattern },
+      { activitySource: pattern },
+      ...(Number.isSafeInteger(Number(query)) ? [{ telegramUserId: Number(query) }] : [])
     ];
   }
 
@@ -120,6 +134,11 @@ export async function POST(request: Request) {
           createdAt: 1,
           delivered: 1,
           deliveryStatus: 1,
+          activitySource: { $ifNull: ["$source", "browser"] },
+          telegramUserId: 1,
+          username: 1,
+          firstName: 1,
+          lastName: 1,
           source: { $literal: "web" }
         }
       },
@@ -141,9 +160,12 @@ export async function POST(request: Request) {
                 visitorId: { $toString: "$telegramId" },
                 ip: { $literal: "—" },
                 createdAt: 1,
+                telegramUserId: "$telegramId",
                 username: 1,
                 firstName: 1,
+                lastName: 1,
                 metadata: 1,
+                activitySource: { $literal: "telegram_bot" },
                 source: { $literal: "bot" }
               }
             }
@@ -204,7 +226,12 @@ export async function POST(request: Request) {
         ip: event.ip,
         createdAt: event.createdAt,
         delivered: event.delivered,
-        deliveryStatus: event.deliveryStatus
+        deliveryStatus: event.deliveryStatus,
+        activitySource: event.activitySource,
+        telegramUserId: event.telegramUserId,
+        username: event.username,
+        firstName: event.firstName,
+        lastName: event.lastName
       })),
       pagination: {
         page,

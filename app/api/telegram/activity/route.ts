@@ -3,9 +3,15 @@ import { getMongoDb } from "../../../lib/mongodb";
 import {
   ADMIN_ACTIVITY_COLLECTION,
   getAdminTelegramIds,
-  type AdminActivityDocument
+  type AdminActivityDocument,
+  type AdminActivitySource
 } from "../../../lib/admin-notifications";
-import { sendTelegramMessage } from "../../../lib/telegram";
+import {
+  getTelegramBotToken,
+  sendTelegramMessage,
+  verifyTelegramInitData,
+  type TelegramUser
+} from "../../../lib/telegram";
 
 export const runtime = "nodejs";
 
@@ -15,6 +21,7 @@ type ActivityEvent = {
   label?: unknown;
   referrer?: unknown;
   visitorId?: unknown;
+  initData?: unknown;
 };
 
 const eventTitles = {
@@ -76,7 +83,50 @@ function hasInvalidOrigin(request: Request) {
   }
 }
 
+function isLocalRequest(request: Request) {
+  if (process.env.NODE_ENV !== "production") {
+    return true;
+  }
+
+  const hostname = new URL(request.url).hostname;
+  return (
+    hostname === "localhost" ||
+    hostname === "0.0.0.0" ||
+    hostname === "::1" ||
+    hostname === "[::1]" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".local") ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^10(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^192\.168(?:\.\d{1,3}){2}$/.test(hostname) ||
+    /^172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}$/.test(hostname)
+  );
+}
+
+function getTelegramUser(initData: unknown) {
+  if (typeof initData !== "string" || !initData) {
+    return undefined;
+  }
+
+  const botToken = getTelegramBotToken();
+  if (!botToken) {
+    return undefined;
+  }
+
+  return verifyTelegramInitData(initData, botToken);
+}
+
+function getTelegramUserTitle(user: TelegramUser) {
+  const name = [user.first_name, user.last_name].filter(Boolean).join(" ");
+  const username = user.username ? `@${user.username}` : "";
+  return [name, username].filter(Boolean).join(" · ") || `ID ${user.id}`;
+}
+
 export async function POST(request: Request) {
+  if (isLocalRequest(request)) {
+    return NextResponse.json({ ok: true, skipped: "local_environment" });
+  }
+
   if (hasInvalidOrigin(request)) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
@@ -109,12 +159,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "path and visitorId are required" }, { status: 400 });
   }
 
+  let telegramUser: TelegramUser | undefined;
+  try {
+    telegramUser = getTelegramUser(body?.initData);
+  } catch {
+    return NextResponse.json({ error: "Invalid Telegram initData" }, { status: 401 });
+  }
+
+  if (typeof body?.initData === "string" && body.initData && !telegramUser) {
+    return NextResponse.json({ error: "Invalid Telegram initData" }, { status: 401 });
+  }
+
+  const source: AdminActivitySource = telegramUser ? "telegram_webapp" : "browser";
+
   const message = [
     eventTitles[type],
     `Страница: ${path}`,
     type === "click" ? `Действие: ${label ?? "Без названия"}` : undefined,
     type === "visit" && referrer ? `Источник: ${referrer}` : undefined,
-    `Посетитель: ${visitorId.slice(0, 8)}`,
+    `Среда: ${source === "telegram_webapp" ? "Telegram WebApp" : "Открытый браузер"}`,
+    telegramUser
+      ? `Пользователь: ${getTelegramUserTitle(telegramUser)} (ID ${telegramUser.id})`
+      : `Посетитель: ${visitorId.slice(0, 8)}`,
     `IP: ${clientIp}`
   ]
     .filter(Boolean)
@@ -129,6 +195,11 @@ export async function POST(request: Request) {
       ...(label ? { label } : {}),
       ...(referrer ? { referrer } : {}),
       visitorId,
+      source,
+      ...(telegramUser?.id ? { telegramUserId: telegramUser.id } : {}),
+      ...(telegramUser?.username ? { username: telegramUser.username } : {}),
+      ...(telegramUser?.first_name ? { firstName: telegramUser.first_name } : {}),
+      ...(telegramUser?.last_name ? { lastName: telegramUser.last_name } : {}),
       ip: clientIp,
       createdAt: new Date(),
       delivered: 0,

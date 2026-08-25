@@ -6,6 +6,7 @@ export const BOT_EVENTS_COLLECTION =
   process.env.MONGODB_BOT_EVENTS_COLLECTION ?? "botevents";
 
 export type AdminActivityType = "visit" | "click" | "bottom";
+export type AdminActivitySource = "browser" | "telegram_webapp";
 export type BotActivityType = "bot_started" | "quiz_completed";
 export type AdminEventType = AdminActivityType | BotActivityType;
 
@@ -15,6 +16,11 @@ export type AdminActivityDocument = Document & {
   label?: string;
   referrer?: string;
   visitorId: string;
+  source: AdminActivitySource;
+  telegramUserId?: number;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
   ip: string;
   createdAt: Date;
   delivered: number;

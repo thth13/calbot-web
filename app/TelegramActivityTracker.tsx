@@ -54,13 +54,40 @@ function getElementLabel(element: HTMLElement) {
   return label.replace(/\s+/g, " ").trim().slice(0, 120) || "Без названия";
 }
 
+function isLocalEnvironment() {
+  const hostname = window.location.hostname;
+  return (
+    hostname === "localhost" ||
+    hostname === "0.0.0.0" ||
+    hostname === "::1" ||
+    hostname === "[::1]" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".local") ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^10(?:\.\d{1,3}){3}$/.test(hostname) ||
+    /^192\.168(?:\.\d{1,3}){2}$/.test(hostname) ||
+    /^172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}$/.test(hostname)
+  );
+}
+
 function sendActivity(event: ActivityEvent) {
+  if (isLocalEnvironment()) {
+    return;
+  }
+
+  const initData = (window as Window & {
+    Telegram?: { WebApp?: { initData?: string } };
+  }).Telegram?.WebApp?.initData;
+
   void fetch("/api/telegram/activity", {
     method: "POST",
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify(event),
+    body: JSON.stringify({
+      ...event,
+      ...(initData ? { initData } : {})
+    }),
     keepalive: true
   }).catch(() => undefined);
 }

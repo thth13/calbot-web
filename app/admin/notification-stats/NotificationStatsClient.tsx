@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 
 type EventType = "visit" | "click" | "bottom" | "bot_started" | "quiz_completed";
 type DeliveryStatus = "pending" | "sent" | "failed";
+type ActivitySource = "browser" | "telegram_webapp" | "telegram_bot";
 
 type ActivityEvent = {
   id: string;
@@ -18,6 +19,11 @@ type ActivityEvent = {
   createdAt: string;
   delivered?: number;
   deliveryStatus?: DeliveryStatus;
+  activitySource: ActivitySource;
+  telegramUserId?: number;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
 };
 
 type StatsData = {
@@ -58,10 +64,30 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function getVisitorLabel(item: ActivityEvent) {
+  if (item.activitySource === "browser") {
+    return item.visitorId.slice(0, 8);
+  }
+
+  const name = [item.firstName, item.lastName].filter(Boolean).join(" ");
+  const username = item.username ? `@${item.username}` : "";
+  return (
+    [name, username].filter(Boolean).join(" · ") ||
+    String(item.telegramUserId ?? item.visitorId)
+  );
+}
+
+function getSourceLabel(source: ActivityEvent["activitySource"]) {
+  if (source === "telegram_webapp") return "Telegram WebApp";
+  if (source === "telegram_bot") return "Telegram-бот";
+  return "Браузер";
+}
+
 export default function NotificationStatsClient() {
   const [data, setData] = useState<StatsData>();
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [eventType, setEventType] = useState<EventType | "all">("all");
+  const [activitySource, setActivitySource] = useState<ActivitySource | "all">("all");
   const [searchInput, setSearchInput] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -81,6 +107,7 @@ export default function NotificationStatsClient() {
           body: JSON.stringify({
             page,
             type: eventType === "all" ? undefined : eventType,
+            activitySource: activitySource === "all" ? undefined : activitySource,
             query
           })
         });
@@ -102,7 +129,7 @@ export default function NotificationStatsClient() {
     return () => {
       active = false;
     };
-  }, [eventType, page, query, reloadKey]);
+  }, [activitySource, eventType, page, query, reloadKey]);
 
   function applySearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -113,6 +140,11 @@ export default function NotificationStatsClient() {
   function changeType(value: EventType | "all") {
     setPage(1);
     setEventType(value);
+  }
+
+  function changeSource(value: ActivitySource | "all") {
+    setPage(1);
+    setActivitySource(value);
   }
 
   async function deleteEvent(item: ActivityEvent) {
@@ -143,7 +175,7 @@ export default function NotificationStatsClient() {
     }
   }
 
-  const emptyMessage = query || eventType !== "all"
+  const emptyMessage = query || eventType !== "all" || activitySource !== "all"
     ? "По выбранным фильтрам событий нет."
     : "События появятся после первого действия посетителя.";
 
@@ -180,7 +212,7 @@ export default function NotificationStatsClient() {
               <input
                 aria-label="Поиск по журналу"
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Страница, действие, IP…"
+                placeholder="Страница, пользователь, IP…"
                 type="search"
                 value={searchInput}
               />
@@ -197,6 +229,18 @@ export default function NotificationStatsClient() {
                 type="button"
               >
                 {value === "all" ? "Все" : eventLabels[value]}
+              </button>
+            ))}
+          </div>
+          <div className="adminFilters" aria-label="Фильтр среды">
+            {(["all", "browser", "telegram_webapp", "telegram_bot"] as const).map((value) => (
+              <button
+                aria-pressed={activitySource === value}
+                key={value}
+                onClick={() => changeSource(value)}
+                type="button"
+              >
+                {value === "all" ? "Все среды" : getSourceLabel(value)}
               </button>
             ))}
           </div>
@@ -218,6 +262,7 @@ export default function NotificationStatsClient() {
                     <tr>
                       <th>Время</th>
                       <th>Событие</th>
+                      <th>Среда</th>
                       <th>Страница / действие</th>
                       <th>Посетитель</th>
                       <th>IP</th>
@@ -230,11 +275,12 @@ export default function NotificationStatsClient() {
                       <tr key={`${item.source}-${item.id}`}>
                         <td className="adminDateCell">{formatDate(item.createdAt)}</td>
                         <td><span className={`eventBadge ${item.type}`}>{eventLabels[item.type]}</span></td>
+                        <td>{getSourceLabel(item.activitySource)}</td>
                         <td className="adminActionCell">
                           <strong>{item.path}</strong>
                           {item.label ? <span>{item.label}</span> : item.referrer ? <span>из {item.referrer}</span> : null}
                         </td>
-                        <td title={item.visitorId}>{item.source === "bot" ? item.visitorId : item.visitorId.slice(0, 8)}</td>
+                        <td title={String(item.telegramUserId ?? item.visitorId)}>{getVisitorLabel(item)}</td>
                         <td>{item.ip}</td>
                         <td>
                           {item.deliveryStatus ? (
