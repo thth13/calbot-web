@@ -145,6 +145,37 @@
   color: #fff;
 }
 
+.adminSelectionToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+  background: #fff8e8;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.adminSelectionToolbar button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e0a39d;
+  border-radius: 8px;
+  background: #fff0ed;
+  color: #94362a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.adminSelectionToolbar button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .adminTableWrap {
   overflow-x: auto;
   border-top: 1px solid var(--line);
@@ -157,7 +188,7 @@
 
 .adminActivityTable {
   width: 100%;
-  min-width: 940px;
+  min-width: 1000px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -181,6 +212,22 @@
 
 .adminActivityTable tbody tr:hover {
   background: #fffcf5;
+}
+
+.adminActivityTable tbody tr.isSelected {
+  background: #fff8e8;
+}
+
+.adminSelectCell {
+  width: 42px;
+  text-align: center;
+}
+
+.adminSelectCell input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ink);
+  cursor: pointer;
 }
 
 .adminDateCell {

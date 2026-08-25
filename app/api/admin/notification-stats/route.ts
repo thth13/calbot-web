@@ -26,9 +26,13 @@ type StatsRequest = {
   activitySource?: unknown;
 };
 
-type DeleteRequest = {
+type DeleteItem = {
   id?: unknown;
   source?: unknown;
+};
+
+type DeleteRequest = DeleteItem & {
+  items?: unknown;
 };
 
 function escapeRegExp(value: string) {
@@ -248,23 +252,42 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const body = (await request.json().catch(() => undefined)) as DeleteRequest | undefined;
-  if (typeof body?.id !== "string" || !ObjectId.isValid(body.id)) {
-    return NextResponse.json({ error: "Invalid event id" }, { status: 400 });
+  const rawItems: DeleteItem[] = Array.isArray(body?.items)
+    ? (body.items as DeleteItem[])
+    : [{ id: body?.id, source: body?.source }];
+
+  if (rawItems.length === 0 || rawItems.length > 200) {
+    return NextResponse.json({ error: "Select between 1 and 200 events" }, { status: 400 });
   }
-  if (body.source !== "web" && body.source !== "bot") {
-    return NextResponse.json({ error: "Invalid event source" }, { status: 400 });
+
+  const items = rawItems.map((item) => ({
+    id: typeof item.id === "string" && ObjectId.isValid(item.id) ? new ObjectId(item.id) : undefined,
+    source: item.source
+  }));
+
+  if (items.some((item) => !item.id || (item.source !== "web" && item.source !== "bot"))) {
+    return NextResponse.json({ error: "Invalid event selection" }, { status: 400 });
   }
 
   try {
     const db = await getMongoDb();
-    const collectionName = body.source === "bot" ? BOT_EVENTS_COLLECTION : ADMIN_ACTIVITY_COLLECTION;
-    const result = await db.collection(collectionName).deleteOne({ _id: new ObjectId(body.id) });
+    const webIds = items.filter((item) => item.source === "web").map((item) => item.id!);
+    const botIds = items.filter((item) => item.source === "bot").map((item) => item.id!);
+    const results = await Promise.all([
+      webIds.length
+        ? db.collection(ADMIN_ACTIVITY_COLLECTION).deleteMany({ _id: { $in: webIds } })
+        : undefined,
+      botIds.length
+        ? db.collection(BOT_EVENTS_COLLECTION).deleteMany({ _id: { $in: botIds } })
+        : undefined
+    ]);
+    const deleted = results.reduce((total, result) => total + (result?.deletedCount ?? 0), 0);
 
-    if (result.deletedCount === 0) {
+    if (deleted === 0) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, deleted });
   } catch (error) {
     console.error("Could not delete admin activity", error);
     return NextResponse.json({ error: "Could not delete activity event" }, { status: 500 });

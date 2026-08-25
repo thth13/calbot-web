@@ -22,12 +22,12 @@ type ActivityEvent = {
   referrer?: unknown;
   visitorId?: unknown;
   initData?: unknown;
+  target?: unknown;
 };
 
 const eventTitles = {
-  visit: "👋 Новый визит",
-  click: "👆 Нажатие",
-  bottom: "📜 Страница просмотрена до конца"
+  visit: "👋 New visit",
+  click: "🤖 Telegram bot button clicked"
 } as const;
 
 const requestLog = new Map<string, number[]>();
@@ -147,8 +147,12 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => undefined)) as ActivityEvent | undefined;
   const type = body?.type;
-  if (type !== "visit" && type !== "click" && type !== "bottom") {
+  if (type !== "visit" && type !== "click") {
     return NextResponse.json({ error: "Unknown event type" }, { status: 400 });
+  }
+
+  if (type === "click" && body?.target !== "open_bot") {
+    return NextResponse.json({ error: "Unknown click target" }, { status: 400 });
   }
 
   const path = cleanText(body?.path, 300);
@@ -157,6 +161,10 @@ export async function POST(request: Request) {
   const visitorId = cleanText(body?.visitorId, 80);
   if (!path || !visitorId) {
     return NextResponse.json({ error: "path and visitorId are required" }, { status: 400 });
+  }
+
+  if (type === "visit" && path !== "/" && !path.startsWith("/?")) {
+    return NextResponse.json({ error: "Only homepage visits are tracked" }, { status: 400 });
   }
 
   let telegramUser: TelegramUser | undefined;
@@ -174,14 +182,14 @@ export async function POST(request: Request) {
 
   const message = [
     eventTitles[type],
-    `Страница: ${path}`,
-    type === "click" ? `Действие: ${label ?? "Без названия"}` : undefined,
-    type === "visit" && referrer ? `Источник: ${referrer}` : undefined,
-    `Среда: ${source === "telegram_webapp" ? "Telegram WebApp" : "Открытый браузер"}`,
+    `📄 Page: ${path}`,
+    type === "click" ? `🎯 Action: ${label ?? "Unnamed action"}` : undefined,
+    type === "visit" && referrer ? `↗️ Referrer: ${referrer}` : undefined,
+    `📍 Source: ${source === "telegram_webapp" ? "Telegram" : "Browser"}`,
     telegramUser
-      ? `Пользователь: ${getTelegramUserTitle(telegramUser)} (ID ${telegramUser.id})`
-      : `Посетитель: ${visitorId.slice(0, 8)}`,
-    `IP: ${clientIp}`
+      ? `👤 User: ${getTelegramUserTitle(telegramUser)} (ID ${telegramUser.id})`
+      : `👤 Visitor: ${visitorId.slice(0, 8)}`,
+    `🌐 IP: ${clientIp}`
   ]
     .filter(Boolean)
     .join("\n");

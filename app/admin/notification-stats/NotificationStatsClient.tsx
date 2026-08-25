@@ -83,6 +83,10 @@ function getSourceLabel(source: ActivityEvent["activitySource"]) {
   return "Браузер";
 }
 
+function getEventKey(item: Pick<ActivityEvent, "id" | "source">) {
+  return `${item.source}:${item.id}`;
+}
+
 export default function NotificationStatsClient() {
   const [data, setData] = useState<StatsData>();
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -93,6 +97,8 @@ export default function NotificationStatsClient() {
   const [page, setPage] = useState(1);
   const [reloadKey, setReloadKey] = useState(0);
   const [deletingId, setDeletingId] = useState("");
+  const [selectedItems, setSelectedItems] = useState<Record<string, ActivityEvent>>({});
+  const [deletingSelected, setDeletingSelected] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -147,6 +153,73 @@ export default function NotificationStatsClient() {
     setActivitySource(value);
   }
 
+  function toggleItem(item: ActivityEvent) {
+    const key = getEventKey(item);
+    setSelectedItems((current) => {
+      const next = { ...current };
+      if (next[key]) {
+        delete next[key];
+      } else {
+        next[key] = item;
+      }
+      return next;
+    });
+  }
+
+  function toggleCurrentPage() {
+    if (!data) return;
+
+    const allSelected = data.events.every((item) => selectedItems[getEventKey(item)]);
+    setSelectedItems((current) => {
+      const next = { ...current };
+      data.events.forEach((item) => {
+        const key = getEventKey(item);
+        if (allSelected) {
+          delete next[key];
+        } else {
+          next[key] = item;
+        }
+      });
+      return next;
+    });
+  }
+
+  async function deleteSelectedEvents() {
+    const selected = Object.values(selectedItems);
+    if (selected.length === 0) return;
+    if (!window.confirm(`Удалить выбранные события (${selected.length})?`)) return;
+
+    const allCurrentPageSelected = Boolean(
+      data?.events.length && data.events.every((item) => selectedItems[getEventKey(item)])
+    );
+    setDeletingSelected(true);
+    try {
+      const response = await fetch("/api/admin/notification-stats", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          items: selected.map((item) => ({ id: item.id, source: item.source }))
+        })
+      });
+
+      if (!response.ok) {
+        window.alert("Не удалось удалить выбранные события.");
+        return;
+      }
+
+      setSelectedItems({});
+      if (allCurrentPageSelected && page > 1) {
+        setPage((value) => value - 1);
+      } else {
+        setReloadKey((value) => value + 1);
+      }
+    } catch {
+      window.alert("Не удалось удалить выбранные события.");
+    } finally {
+      setDeletingSelected(false);
+    }
+  }
+
   async function deleteEvent(item: ActivityEvent) {
     if (!window.confirm(`Удалить событие «${eventLabels[item.type]}»?`)) return;
 
@@ -162,6 +235,12 @@ export default function NotificationStatsClient() {
         window.alert("Не удалось удалить событие.");
         return;
       }
+
+      setSelectedItems((current) => {
+        const next = { ...current };
+        delete next[getEventKey(item)];
+        return next;
+      });
 
       if (data?.events.length === 1 && page > 1) {
         setPage((value) => value - 1);
@@ -245,6 +324,19 @@ export default function NotificationStatsClient() {
             ))}
           </div>
 
+          {Object.keys(selectedItems).length > 0 ? (
+            <div className="adminSelectionToolbar">
+              <span>Выбрано: {Object.keys(selectedItems).length}</span>
+              <button
+                disabled={deletingSelected}
+                onClick={() => void deleteSelectedEvents()}
+                type="button"
+              >
+                {deletingSelected ? "Удаление…" : "Удалить выбранные"}
+              </button>
+            </div>
+          ) : null}
+
           {status === "error" ? (
             <div className="adminState adminStateError">
               <strong>Не удалось загрузить статистику</strong>
@@ -260,6 +352,15 @@ export default function NotificationStatsClient() {
                 <table className="adminActivityTable">
                   <thead>
                     <tr>
+                      <th className="adminSelectCell">
+                        <input
+                          aria-label="Выбрать все события на странице"
+                          checked={data.events.length > 0 && data.events.every((item) => selectedItems[getEventKey(item)])}
+                          disabled={deletingSelected || status === "loading"}
+                          onChange={toggleCurrentPage}
+                          type="checkbox"
+                        />
+                      </th>
                       <th>Время</th>
                       <th>Событие</th>
                       <th>Среда</th>
@@ -272,7 +373,19 @@ export default function NotificationStatsClient() {
                   </thead>
                   <tbody>
                     {data.events.map((item) => (
-                      <tr key={`${item.source}-${item.id}`}>
+                      <tr
+                        className={selectedItems[getEventKey(item)] ? "isSelected" : undefined}
+                        key={`${item.source}-${item.id}`}
+                      >
+                        <td className="adminSelectCell">
+                          <input
+                            aria-label={`Выбрать событие «${eventLabels[item.type]}»`}
+                            checked={Boolean(selectedItems[getEventKey(item)])}
+                            disabled={deletingSelected}
+                            onChange={() => toggleItem(item)}
+                            type="checkbox"
+                          />
+                        </td>
                         <td className="adminDateCell">{formatDate(item.createdAt)}</td>
                         <td><span className={`eventBadge ${item.type}`}>{eventLabels[item.type]}</span></td>
                         <td>{getSourceLabel(item.activitySource)}</td>
@@ -292,7 +405,7 @@ export default function NotificationStatsClient() {
                         <td>
                           <button
                             className="adminDeleteButton"
-                            disabled={deletingId === item.id}
+                            disabled={deletingSelected || deletingId === item.id}
                             onClick={() => void deleteEvent(item)}
                             type="button"
                           >

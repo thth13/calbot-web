@@ -4,14 +4,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 type ActivityEvent = {
-  type: "visit" | "click" | "bottom";
+  type: "visit" | "click";
   path: string;
   label?: string;
   referrer?: string;
   visitorId: string;
+  target?: "open_bot";
 };
 
-const CLICKABLE_SELECTOR = "button, [role='button'], a";
+const BOT_OPEN_SELECTOR = "[data-track-bot-open]";
 
 function createVisitorId() {
   if (typeof crypto.randomUUID === "function") {
@@ -96,10 +97,9 @@ export default function TelegramActivityTracker() {
   const pathname = usePathname();
   const visitorIdRef = useRef<string>("");
   const lastVisitedPathRef = useRef("");
-  const reachedBottomRef = useRef(false);
 
   useEffect(() => {
-    if (pathname.startsWith("/admin")) {
+    if (pathname !== "/") {
       return;
     }
 
@@ -108,7 +108,6 @@ export default function TelegramActivityTracker() {
     }
 
     const currentPath = getCurrentPath();
-    reachedBottomRef.current = false;
     if (lastVisitedPathRef.current !== currentPath) {
       lastVisitedPathRef.current = currentPath;
       sendActivity({
@@ -124,7 +123,7 @@ export default function TelegramActivityTracker() {
         return;
       }
 
-      const clickable = event.target.closest<HTMLElement>(CLICKABLE_SELECTOR);
+      const clickable = event.target.closest<HTMLElement>(BOT_OPEN_SELECTOR);
       if (!clickable) {
         return;
       }
@@ -133,35 +132,15 @@ export default function TelegramActivityTracker() {
         type: "click",
         path: getCurrentPath(),
         label: getElementLabel(clickable),
-        visitorId: visitorIdRef.current
-      });
-    }
-
-    function handleScroll() {
-      if (reachedBottomRef.current) {
-        return;
-      }
-
-      const scrollBottom = window.scrollY + window.innerHeight;
-      const pageHeight = document.documentElement.scrollHeight;
-      if (scrollBottom < pageHeight - 8) {
-        return;
-      }
-
-      reachedBottomRef.current = true;
-      sendActivity({
-        type: "bottom",
-        path: getCurrentPath(),
-        visitorId: visitorIdRef.current
+        visitorId: visitorIdRef.current,
+        target: "open_bot"
       });
     }
 
     document.addEventListener("click", handleClick, true);
-    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       document.removeEventListener("click", handleClick, true);
-      window.removeEventListener("scroll", handleScroll);
     };
   }, [pathname]);
 

@@ -359,7 +359,14 @@ function Landing() {
             Надішліть фото страви й одразу отримайте калорії, БЖВ та зрозумілу
             статистику прогресу.
           </p>
-          <a className="primaryAction landingAction" href={BOT_URL} target="_blank" rel="noreferrer">
+          <a
+            className="primaryAction landingAction"
+            data-track-bot-open="true"
+            data-track-label="Open Telegram bot"
+            href={BOT_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
             Спробувати в Telegram
           </a>
         </div>
