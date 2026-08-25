@@ -353,7 +353,7 @@ function Landing() {
 
       <section className="landingHero" id="top">
         <div className="landingCopy">
-          <p className="eyebrow">Telegram-бот з AI</p>
+          {/* <p className="eyebrow">Telegram-бот з AI</p> */}
           <h1>Харчування під контролем — без зайвих підрахунків</h1>
           <p className="landingLead">
             Надішліть фото страви й одразу отримайте калорії, БЖВ та зрозумілу

@@ -429,6 +429,8 @@ main {
   width: min(1240px, calc(100% - 40px));
   margin: 0 auto;
   padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 70%);
 }
 
 .landingTag {
@@ -473,8 +475,31 @@ main {
 }
 
 .landingAction {
+  position: relative;
   min-height: 52px;
+  margin-bottom: 27px;
   padding: 0 22px;
+  animation: landingActionPulse 2.2s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+@keyframes landingActionPulse {
+  0%,
+  68%,
+  100% {
+    transform: scale(1);
+    box-shadow: 3px 3px 0 #d8d1c7, 0 0 0 0 rgb(22 20 18 / 0%);
+  }
+
+  78% {
+    transform: scale(1.035);
+    box-shadow: 3px 3px 0 #d8d1c7, 0 0 0 7px rgb(22 20 18 / 13%);
+  }
+
+  88% {
+    transform: scale(1);
+    box-shadow: 3px 3px 0 #d8d1c7, 0 0 0 11px rgb(22 20 18 / 0%);
+  }
 }
 
 .landingScreens {
@@ -2603,6 +2628,7 @@ footer nav a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landingAction,
   .skeletonLine,
   .skeletonBar,
   .skeletonFoodItem .foodTime,
@@ -2648,6 +2674,7 @@ footer nav a:hover {
 
   .landingAction {
     min-height: 46px;
+    margin-bottom: 17px;
   }
 
   .landingPhone {
@@ -2736,6 +2763,7 @@ footer nav a:hover {
 
   .landingAction {
     min-height: 43px;
+    margin-bottom: 14px;
     padding: 0 17px;
     font-size: 14px;
   }
@@ -3038,6 +3066,7 @@ footer nav a:hover {
 
   .landingAction {
     min-height: 39px;
+    margin-bottom: 10px;
   }
 
   .landingPhone {
