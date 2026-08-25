@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import BodyMeasurementClient from "./BodyMeasurementClient";
 
 export const metadata: Metadata = {
-  title: "CalBot Body Measurements",
-  description: "CalBot body measurements history and editor."
+  title: "Вимірювання тіла — CalBot",
+  description: "Історія та редагування вимірювань тіла в CalBot."
 };
 
 export default function BodyMeasurementPage() {

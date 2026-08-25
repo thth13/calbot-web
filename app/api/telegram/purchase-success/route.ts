@@ -6,8 +6,8 @@ import {
 } from "../../../lib/telegram";
 
 const planNames: Record<string, string> = {
-  monthly: "Monthly",
-  yearly: "Yearly"
+  monthly: "Щомісячний",
+  yearly: "Річний"
 };
 
 export async function POST(request: Request) {
@@ -37,11 +37,11 @@ export async function POST(request: Request) {
 
   const plan = typeof body.plan === "string" ? planNames[body.plan] : undefined;
   const message = [
-    "🎉 Payment complete!",
-    "Thank you for buying CalBot Premium 💎",
-    plan ? `📅 Plan: ${plan}` : undefined,
-    "✨ Premium will activate after the payment is processed.",
-    "🚀 Enjoy your upgraded CalBot experience!"
+    "🎉 Оплату завершено!",
+    "Дякуємо за придбання CalBot Premium 💎",
+    plan ? `📅 План: ${plan}` : undefined,
+    "✨ Premium активується після обробки платежу.",
+    "🚀 Користуйтеся розширеними можливостями CalBot!"
   ]
     .filter(Boolean)
     .join("\n");

@@ -101,7 +101,7 @@ function getLocalDateKey(date: Date) {
 }
 
 function formatDateLabel(dateKey: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("uk-UA", {
     timeZone: TIME_ZONE,
     month: "long",
     day: "numeric",
@@ -202,15 +202,15 @@ function toMeasurementPayload(input: MeasurementInput) {
   const notes = typeof input.notes === "string" ? input.notes.trim() : "";
 
   if (!dateKey) {
-    return { error: "Measurement date is required" };
+    return { error: "Укажіть дату вимірювання" };
   }
 
   if (Object.values(values).every((value) => value === undefined)) {
-    return { error: "At least one measurement value is required" };
+    return { error: "Укажіть принаймні одне значення вимірювання" };
   }
 
   if (Object.values(values).some((value) => value !== undefined && value < 0)) {
-    return { error: "Measurement values cannot be negative" };
+    return { error: "Значення вимірювань не можуть бути від’ємними" };
   }
 
   return {
@@ -279,7 +279,7 @@ function buildResponse(measurements: BodyMeasurementDocument[]) {
       return {
         id: measurement._id?.toString() ?? dateKey,
         dateKey,
-        date: dateKey ? formatDateLabel(dateKey) : "Unknown date",
+        date: dateKey ? formatDateLabel(dateKey) : "Невідома дата",
         weightKg: readNumber(measurement, ["weightKg", "weight", "body.weight", "metrics.weightKg"]),
         heightCm: readNumber(measurement, ["heightCm", "height", "body.height", "metrics.heightCm"]),
         bodyFatPercent: readNumber(measurement, ["bodyFatPercent", "bodyFat", "fatPercent", "metrics.bodyFatPercent"]),

@@ -56,13 +56,13 @@ const emptyDraft: MeasurementDraft = {
 };
 
 const measurementFields = [
-  ["weightKg", "Weight", "kg"],
-  ["heightCm", "Height", "cm"],
-  ["bodyFatPercent", "Body fat", "%"],
-  ["waistCm", "Waist", "cm"],
-  ["chestCm", "Chest", "cm"],
-  ["hipsCm", "Hips", "cm"],
-  ["neckCm", "Neck", "cm"]
+  ["weightKg", "Вага", "кг"],
+  ["heightCm", "Зріст", "см"],
+  ["bodyFatPercent", "Жирова маса", "%"],
+  ["waistCm", "Талія", "см"],
+  ["chestCm", "Груди", "см"],
+  ["hipsCm", "Стегна", "см"],
+  ["neckCm", "Шия", "см"]
 ] as const;
 
 function waitForTelegramWebApp(timeoutMs = 1500) {
@@ -130,7 +130,7 @@ function MeasurementForm({
       }}
     >
       <label>
-        <span>Date</span>
+        <span>Дата</span>
         <input
           required
           type="date"
@@ -157,7 +157,7 @@ function MeasurementForm({
       </div>
 
       <label>
-        <span>Notes</span>
+        <span>Нотатки</span>
         <input value={draft.notes} onChange={(event) => onChange({ ...draft, notes: event.target.value })} />
       </label>
 
@@ -167,7 +167,7 @@ function MeasurementForm({
         </button>
         {onCancel ? (
           <button disabled={disabled} onClick={onCancel} type="button">
-            Cancel
+            Скасувати
           </button>
         ) : null}
       </div>
@@ -212,27 +212,27 @@ function BodyMeasurementContent({
     <>
       <section className="diaryHero">
         <div>
-          <p className="eyebrow">Body</p>
-          <h1 id="bodymeasurement-title">Measurements</h1>
+          <p className="eyebrow">Тіло</p>
+          <h1 id="bodymeasurement-title">Вимірювання</h1>
         </div>
         <div className="diaryTotal">
-          <span>Latest</span>
-          <strong>{formatValue(data.latest?.weightKg, "kg")}</strong>
+          <span>Останнє</span>
+          <strong>{formatValue(data.latest?.weightKg, "кг")}</strong>
         </div>
       </section>
 
       <section className="diaryDay">
         <header className="diaryDayHeader">
           <div>
-            <span>New entry</span>
-            <strong>Add measurement</strong>
+            <span>Новий запис</span>
+            <strong>Додати вимірювання</strong>
           </div>
         </header>
         <div className="dayFoodList">
           <MeasurementForm
             disabled={pendingId === "new"}
             draft={newDraft}
-            submitLabel={pendingId === "new" ? "Saving" : "Add"}
+            submitLabel={pendingId === "new" ? "Збереження…" : "Додати"}
             onChange={onChangeNewDraft}
             onSubmit={onCreate}
           />
@@ -251,16 +251,16 @@ function BodyMeasurementContent({
                 <header className="measurementItemHeader">
                   <div>
                     <span>{measurement.date}</span>
-                    <strong>{formatValue(measurement.weightKg, "kg")}</strong>
+                    <strong>{formatValue(measurement.weightKg, "кг")}</strong>
                   </div>
-                  <p>{formatValue(measurement.bodyFatPercent, "%")} fat</p>
+                  <p>{formatValue(measurement.bodyFatPercent, "%")} жиру</p>
                 </header>
 
                 {isEditing ? (
                   <MeasurementForm
                     disabled={isPending}
                     draft={editDraft}
-                    submitLabel={isPending ? "Saving" : "Save"}
+                    submitLabel={isPending ? "Збереження…" : "Зберегти"}
                     onCancel={onCancelEdit}
                     onChange={onChangeEditDraft}
                     onSubmit={() => onSaveEdit(measurement.id)}
@@ -276,23 +276,23 @@ function BodyMeasurementContent({
                       ))}
                     </div>
                     {measurement.notes ? <p className="measurementNotes">{measurement.notes}</p> : null}
-                    <div className="foodActions measurementRowActions" aria-label={`Actions for ${measurement.date}`}>
+                    <div className="foodActions measurementRowActions" aria-label={`Дії для ${measurement.date}`}>
                       {isDeleting ? (
                         <>
                           <button disabled={isPending} onClick={() => onConfirmDelete(measurement.id)} type="button">
-                            {isPending ? "Deleting" : "Confirm"}
+                            {isPending ? "Видалення…" : "Підтвердити"}
                           </button>
                           <button disabled={isPending} onClick={onCancelDelete} type="button">
-                            Cancel
+                            Скасувати
                           </button>
                         </>
                       ) : (
                         <>
                           <button disabled={Boolean(pendingId)} onClick={() => onStartEdit(measurement)} type="button">
-                            Edit
+                            Редагувати
                           </button>
                           <button disabled={Boolean(pendingId)} onClick={() => onAskDelete(measurement.id)} type="button">
-                            Delete
+                            Видалити
                           </button>
                         </>
                       )}
@@ -307,8 +307,8 @@ function BodyMeasurementContent({
         <section className="diaryDay" aria-live="polite">
           <header className="diaryDayHeader">
             <div>
-              <span>Body</span>
-              <strong>No measurements yet</strong>
+              <span>Тіло</span>
+              <strong>Вимірювань ще немає</strong>
             </div>
           </header>
         </section>
@@ -321,7 +321,7 @@ function BodyMeasurementSkeleton() {
   return (
     <>
       <h1 className="srOnly" id="bodymeasurement-title">
-        Loading body measurements
+        Завантаження вимірювань тіла
       </h1>
       <section className="diaryHero" aria-hidden="true">
         <div>
@@ -371,7 +371,7 @@ export default function BodyMeasurementClient() {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to load body measurements");
+      throw new Error("Не вдалося завантажити вимірювання тіла");
     }
 
     return (await response.json()) as BodyMeasurementData;
@@ -451,13 +451,13 @@ export default function BodyMeasurementClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create body measurement");
+        throw new Error("Не вдалося створити вимірювання тіла");
       }
 
       setNewDraft(emptyDraft);
       await reloadMeasurements();
     } catch {
-      setActionError("Could not add this body measurement.");
+      setActionError("Не вдалося додати це вимірювання тіла.");
     } finally {
       setPendingId("");
     }
@@ -481,13 +481,13 @@ export default function BodyMeasurementClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save body measurement");
+        throw new Error("Не вдалося зберегти вимірювання тіла");
       }
 
       setEditingId("");
       await reloadMeasurements();
     } catch {
-      setActionError("Could not save this body measurement.");
+      setActionError("Не вдалося зберегти це вимірювання тіла.");
     } finally {
       setPendingId("");
     }
@@ -511,13 +511,13 @@ export default function BodyMeasurementClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete body measurement");
+        throw new Error("Не вдалося видалити вимірювання тіла");
       }
 
       setDeletingId("");
       await reloadMeasurements();
     } catch {
-      setActionError("Could not delete this body measurement.");
+      setActionError("Не вдалося видалити це вимірювання тіла.");
     } finally {
       setPendingId("");
     }
@@ -531,8 +531,8 @@ export default function BodyMeasurementClient() {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
-          <nav className="dashboardNav" aria-label="Body measurement navigation">
-            <a href="/">← Back</a>
+          <nav className="dashboardNav" aria-label="Навігація вимірюваннями тіла">
+            <a href="/">← Назад</a>
           </nav>
         </header>
 
@@ -567,19 +567,19 @@ export default function BodyMeasurementClient() {
           <section className="diaryDay" aria-live="polite">
             <header className="diaryDayHeader">
               <div>
-                <span>Body</span>
-                <strong id="bodymeasurement-title">Measurements unavailable</strong>
+                <span>Тіло</span>
+                <strong id="bodymeasurement-title">Вимірювання недоступні</strong>
               </div>
             </header>
             <div className="dayFoodList">
-              <p>Open this page from the Telegram app to load your body measurements.</p>
+              <p>Відкрийте цю сторінку в Telegram, щоб завантажити вимірювання тіла.</p>
             </div>
           </section>
         )}
 
-        <section className="quickActions statsActions" aria-label="Body measurement actions">
+        <section className="quickActions statsActions" aria-label="Дії з вимірюваннями тіла">
           <a className="quickAction" href="/">
-            ← Back
+            ← Назад
           </a>
         </section>
       </section>

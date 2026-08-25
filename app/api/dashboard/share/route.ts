@@ -5,18 +5,18 @@ import { getTelegramBotToken, verifyTelegramInitData } from "../../../lib/telegr
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 
 function createShareCaption(formData: FormData) {
-  const userTitle = String(formData.get("userTitle") ?? "My day");
+  const userTitle = String(formData.get("userTitle") ?? "Мій день");
   const calories = String(formData.get("calories") ?? "0");
   const calorieTarget = String(formData.get("calorieTarget") ?? "0");
   const meals = String(formData.get("meals") ?? "0");
-  const dayTitle = String(formData.get("dayTitle") ?? "today").toLowerCase();
+  const dayTitle = String(formData.get("dayTitle") ?? "сьогодні").toLowerCase();
 
   return [
-    `${userTitle} in CalBot`,
-    `${calories} / ${calorieTarget} kcal ${dayTitle}`,
-    `${meals} meals tracked`,
+    `${userTitle} у CalBot`,
+    `${calories} / ${calorieTarget} ккал — ${dayTitle}`,
+    `${meals} прийомів їжі відстежено`,
     "",
-    "Track calories in Telegram: https://t.me/caldetect_bot"
+    "Відстежуйте калорії в Telegram: https://t.me/caldetect_bot"
   ].join("\n");
 }
 
@@ -44,29 +44,29 @@ function getRequestOrigin(request: Request) {
 export async function POST(request: Request) {
   const botToken = getTelegramBotToken();
   if (!botToken) {
-    return NextResponse.json({ error: "Telegram bot token is not configured" }, { status: 500 });
+    return NextResponse.json({ error: "Токен Telegram-бота не налаштовано" }, { status: 500 });
   }
 
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid share payload" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректні дані для поширення" }, { status: 400 });
   }
 
   const initData = String(formData.get("initData") ?? "");
   const telegramUser = verifyTelegramInitData(initData, botToken);
   if (!telegramUser?.id) {
-    return NextResponse.json({ error: "Invalid Telegram initData" }, { status: 401 });
+    return NextResponse.json({ error: "Некоректні дані авторизації Telegram" }, { status: 401 });
   }
 
   const photo = formData.get("photo");
   if (!(photo instanceof File)) {
-    return NextResponse.json({ error: "Share photo is required" }, { status: 400 });
+    return NextResponse.json({ error: "Потрібне зображення для поширення" }, { status: 400 });
   }
 
   if (photo.type !== "image/png" || photo.size > MAX_PHOTO_SIZE_BYTES) {
-    return NextResponse.json({ error: "Share photo must be a PNG under 5 MB" }, { status: 400 });
+    return NextResponse.json({ error: "Зображення має бути у форматі PNG і розміром до 5 МБ" }, { status: 400 });
   }
 
   const shareImageId = await saveShareImage(photo);
@@ -78,8 +78,8 @@ export async function POST(request: Request) {
   if (!photoUrl.startsWith("https://")) {
     return NextResponse.json(
       {
-        error: "Share image URL must be public HTTPS",
-        detail: `Configured share image URL is not HTTPS: ${photoUrl}`
+        error: "URL зображення має бути загальнодоступним і використовувати HTTPS",
+        detail: `Налаштований URL зображення не використовує HTTPS: ${photoUrl}`
       },
       { status: 500 }
     );
@@ -90,8 +90,8 @@ export async function POST(request: Request) {
     id: shareImageId,
     photo_url: photoUrl,
     thumbnail_url: photoUrl,
-    title: "CalBot day",
-    description: "Daily calories and macros",
+    title: "День у CalBot",
+    description: "Калорії та БЖВ за день",
     caption: createShareCaption(formData)
   };
 
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Telegram could not prepare the share photo",
+        error: "Telegram не зміг підготувати зображення для поширення",
         detail: errorText
       },
       { status: 502 }
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
 
   const body = (await response.json()) as { ok?: boolean; result?: { id?: string } };
   if (!body.ok || !body.result?.id) {
-    return NextResponse.json({ error: "Telegram returned an invalid prepared message" }, { status: 502 });
+    return NextResponse.json({ error: "Telegram повернув некоректне підготовлене повідомлення" }, { status: 502 });
   }
 
   return NextResponse.json({ preparedMessageId: body.result.id });

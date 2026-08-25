@@ -87,20 +87,20 @@ function StatsContent({
     <>
       <section className="statsHero">
         <div>
-          <p className="eyebrow">Stats</p>
-          <h1 id="stats-title">Calorie dynamics</h1>
+          <p className="eyebrow">Статистика</p>
+          <h1 id="stats-title">Ваш прогрес</h1>
         </div>
         <div className="statsTarget">
-          <span>Goal</span>
-          <strong>{data.calorieTarget} kcal</strong>
+          <span>Ціль</span>
+          <strong>{data.calorieTarget} ккал</strong>
         </div>
       </section>
 
-      <section className="statsChartPanel" aria-label="Daily calories chart">
+      <section className="statsChartPanel" aria-label="Графік калорій за днями">
         <div className="statsPanelHeader">
           <div>
-            <div className="weekControls" aria-label="Choose week">
-              <button type="button" onClick={onPreviousWeek} aria-label="Previous week">
+            <div className="weekControls" aria-label="Вибрати тиждень">
+              <button type="button" onClick={onPreviousWeek} aria-label="Попередній тиждень">
                 ‹
               </button>
               <span>{data.weekRange.label}</span>
@@ -108,17 +108,17 @@ function StatsContent({
                 type="button"
                 onClick={onNextWeek}
                 disabled={data.weekRange.isCurrentWeek}
-                aria-label="Next week"
+                aria-label="Наступний тиждень"
               >
                 ›
               </button>
             </div>
-            <strong>{average7} kcal average</strong>
+            <strong>У середньому {average7} ккал</strong>
           </div>
-          <p>{inTarget} days in target</p>
+          <p>{inTarget} днів у межах цілі</p>
         </div>
 
-        <div className="calorieChart" role="img" aria-label="Calories by day for the last week">
+        <div className="calorieChart" role="img" aria-label="Калорії за днями протягом останнього тижня">
           <span className="targetLine" style={{ bottom: getTargetLineBottom(data.calorieTarget, data.calorieDays) }} />
           {data.calorieDays.map((day) => (
             <div className="chartDay" key={day.key}>
@@ -135,17 +135,17 @@ function StatsContent({
         </div>
       </section>
 
-      <section className="averageGrid" aria-label="Average calories">
+      <section className="averageGrid" aria-label="Середня кількість калорій">
         {data.averageCards.map((card) => (
           <article className="statCard" key={card.label}>
-            <span>Average {card.label}</span>
-            <strong>{card.value} kcal</strong>
+            <span>У середньому за {card.label}</span>
+            <strong>{card.value} ккал</strong>
             <p>{card.delta}</p>
           </article>
         ))}
       </section>
 
-      <section className="rangeGrid" aria-label="Goal range summary">
+      <section className="rangeGrid" aria-label="Підсумок цільового діапазону">
         {data.rangeCards.map((card) => (
           <article className="rangeCard" key={card.label}>
             <span>{card.label}</span>
@@ -155,11 +155,11 @@ function StatsContent({
         ))}
       </section>
 
-      <section className="comparisonPanel" aria-label="Comparison with previous week">
+      <section className="comparisonPanel" aria-label="Порівняння з попереднім тижнем">
         <div className="statsPanelHeader">
           <div>
-            <span>Compared with previous week</span>
-            <strong>Weekly comparison</strong>
+            <span>Порівняно з попереднім тижнем</span>
+            <strong>Тижневе порівняння</strong>
           </div>
         </div>
 
@@ -184,7 +184,7 @@ function StatsSkeleton() {
   return (
     <>
       <h1 className="srOnly" id="stats-title">
-        Loading stats
+        Завантаження статистики
       </h1>
       <section className="statsHero" aria-hidden="true">
         <div>
@@ -333,8 +333,8 @@ export default function StatsClient() {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
-          <nav className="dashboardNav" aria-label="Stats navigation">
-            <a href="/">← Back</a>
+          <nav className="dashboardNav" aria-label="Навігація статистикою">
+            <a href="/">← Назад</a>
           </nav>
         </header>
 
@@ -350,17 +350,17 @@ export default function StatsClient() {
           <section className="comparisonPanel" aria-live="polite">
             <div className="statsPanelHeader">
               <div>
-                <span>Stats</span>
-                <strong id="stats-title">Stats unavailable</strong>
+                <span>Статистика</span>
+                <strong id="stats-title">Статистика недоступна</strong>
               </div>
             </div>
-            <p>Open this page from the Telegram app to load your personal stats.</p>
+            <p>Відкрийте цю сторінку в Telegram, щоб завантажити особисту статистику.</p>
           </section>
         )}
 
-        <section className="quickActions statsActions" aria-label="Stats actions">
+        <section className="quickActions statsActions" aria-label="Дії зі статистикою">
           <a className="quickAction" href="/">
-            ← Back
+            ← Назад
           </a>
         </section>
       </section>

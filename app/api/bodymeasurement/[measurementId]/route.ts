@@ -104,15 +104,15 @@ function toMeasurementPayload(body: Record<string, unknown>) {
   const notes = typeof body.notes === "string" ? body.notes.trim() : "";
 
   if (!dateKey) {
-    return { error: "Measurement date is required" };
+    return { error: "Укажіть дату вимірювання" };
   }
 
   if (Object.values(values).every((value) => value === undefined)) {
-    return { error: "At least one measurement value is required" };
+    return { error: "Укажіть принаймні одне значення вимірювання" };
   }
 
   if (Object.values(values).some((value) => value !== undefined && value < 0)) {
-    return { error: "Measurement values cannot be negative" };
+    return { error: "Значення вимірювань не можуть бути від’ємними" };
   }
 
   return {
@@ -176,7 +176,7 @@ async function getAuthorizedContext(request: Request) {
 export async function PATCH(request: Request, context: { params: Promise<{ measurementId: string }> }) {
   const { measurementId } = await context.params;
   if (!ObjectId.isValid(measurementId)) {
-    return NextResponse.json({ error: "Invalid measurement id" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректний ID вимірювання" }, { status: 400 });
   }
 
   const authorized = await getAuthorizedContext(request);
@@ -198,7 +198,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ measu
   );
 
   if (!result.matchedCount) {
-    return NextResponse.json({ error: "Body measurement not found" }, { status: 404 });
+    return NextResponse.json({ error: "Вимірювання тіла не знайдено" }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });
@@ -207,7 +207,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ measu
 export async function DELETE(request: Request, context: { params: Promise<{ measurementId: string }> }) {
   const { measurementId } = await context.params;
   if (!ObjectId.isValid(measurementId)) {
-    return NextResponse.json({ error: "Invalid measurement id" }, { status: 400 });
+    return NextResponse.json({ error: "Некоректний ID вимірювання" }, { status: 400 });
   }
 
   const authorized = await getAuthorizedContext(request);
@@ -221,7 +221,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ meas
   });
 
   if (!result.deletedCount) {
-    return NextResponse.json({ error: "Body measurement not found" }, { status: 404 });
+    return NextResponse.json({ error: "Вимірювання тіла не знайдено" }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });

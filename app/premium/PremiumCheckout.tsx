@@ -78,24 +78,24 @@ const paddleEnvironment =
 const plans = [
   {
     id: "monthly",
-    title: "Monthly",
+    title: "Щомісяця",
     price: "$4.99",
-    note: "Flexible access",
+    note: "Гнучкий доступ",
     priceId: process.env.NEXT_PUBLIC_PADDLE_MONTHLY_PRICE_ID
   },
   {
     id: "yearly",
-    title: "Yearly",
+    title: "Щороку",
     price: "$39.99",
-    note: "Best value",
+    note: "Найвигідніше",
     priceId: process.env.NEXT_PUBLIC_PADDLE_YEARLY_PRICE_ID
   }
 ] as const;
 
 const benefits = [
-  "Keep scanning after the free 14-day trial",
-  "Advanced calorie and macro stats",
-  "Unlimited nutrition history"
+  "Продовжуйте сканувати після безкоштовного 14-денного пробного періоду",
+  "Розширена статистика калорій і БЖВ",
+  "Необмежена історія харчування"
 ];
 
 export default function PremiumCheckout() {
@@ -124,7 +124,7 @@ export default function PremiumCheckout() {
 
     setIsTelegramSession(hasInitData);
     if (!hasInitData) {
-      setCheckoutError("Open this page from the CalBot Telegram bot to buy Premium.");
+      setCheckoutError("Відкрийте цю сторінку з Telegram-бота CalBot, щоб придбати Premium.");
       return;
     }
 
@@ -164,7 +164,7 @@ export default function PremiumCheckout() {
   async function verifyTelegramUser() {
     const initData = window.Telegram?.WebApp?.initData;
     if (!initData) {
-      throw new Error("Open this page from Telegram to continue.");
+      throw new Error("Щоб продовжити, відкрийте цю сторінку з Telegram.");
     }
 
     const response = await fetch("/api/telegram/verify-init-data", {
@@ -176,7 +176,7 @@ export default function PremiumCheckout() {
     });
 
     if (!response.ok) {
-      throw new Error("Could not verify your Telegram session. Please reopen the page from the bot.");
+      throw new Error("Не вдалося перевірити сеанс Telegram. Відкрийте сторінку з бота ще раз.");
     }
 
     return (await response.json()) as {
@@ -216,7 +216,7 @@ export default function PremiumCheckout() {
 
   async function openCheckout() {
     if (!window.Paddle || !selectedPlan.priceId) {
-      setCheckoutError("The payment form is not configured yet. Please try again later.");
+      setCheckoutError("Платіжну форму ще не налаштовано. Спробуйте пізніше.");
       return;
     }
 
@@ -229,7 +229,7 @@ export default function PremiumCheckout() {
       telegramUser = verified.user;
     } catch (error) {
       setCheckoutState("idle");
-      setCheckoutError(error instanceof Error ? error.message : "Telegram verification failed.");
+      setCheckoutError(error instanceof Error ? error.message : "Не вдалося пройти перевірку Telegram.");
       return;
     }
 
@@ -282,8 +282,8 @@ export default function PremiumCheckout() {
           </ul>
         </div>
 
-        <div className="checkoutPanel" aria-label="Premium checkout">
-          <div className="planToggle" role="radiogroup" aria-label="Subscription period">
+        <div className="checkoutPanel" aria-label="Оформлення Premium">
+          <div className="planToggle" role="radiogroup" aria-label="Період підписки">
             {plans.map((plan) => (
               <label className="checkoutPlan" key={plan.id}>
                 <input
@@ -308,19 +308,19 @@ export default function PremiumCheckout() {
             onClick={openCheckout}
             type="button"
           >
-            {checkoutState === "opening" ? "Opening Paddle..." : "Subscribe"}
+            {checkoutState === "opening" ? "Відкриваємо Paddle…" : "Оформити підписку"}
           </button>
 
           {!isConfigured ? (
             <p className="checkoutNotice">
-              Add Paddle environment variables with a client-side token and price ID to enable
-              payments.
+              Додайте змінні середовища Paddle із клієнтським токеном та ID ціни, щоб
+              увімкнути платежі.
             </p>
           ) : null}
 
           {checkoutState === "completed" ? (
             <p className="checkoutSuccess">
-              Payment complete. Premium will activate after the Paddle webhook is processed.
+              Оплату завершено. Premium активується після обробки вебхука Paddle.
             </p>
           ) : null}
 

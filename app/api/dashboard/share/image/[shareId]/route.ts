@@ -9,7 +9,7 @@ export async function GET(
   const image = await getShareImage(shareId);
 
   if (!image) {
-    return NextResponse.json({ error: "Share image not found" }, { status: 404 });
+    return NextResponse.json({ error: "Зображення для поширення не знайдено" }, { status: 404 });
   }
 
   const body = image.bytes.buffer.slice(

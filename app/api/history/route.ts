@@ -170,21 +170,21 @@ function getMealUserConditions(user: UserDocument, telegramUser: TelegramUser): 
 
 function formatDateTitle(dateKey: string, todayKey: string, yesterdayKey: string) {
   if (dateKey === todayKey) {
-    return "Today";
+    return "Сьогодні";
   }
 
   if (dateKey === yesterdayKey) {
-    return "Yesterday";
+    return "Учора";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("uk-UA", {
     timeZone: TIME_ZONE,
     weekday: "long"
   }).format(new Date(`${dateKey}T12:00:00.000Z`));
 }
 
 function formatDateLabel(dateKey: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("uk-UA", {
     timeZone: TIME_ZONE,
     month: "long",
     day: "numeric"
@@ -192,7 +192,7 @@ function formatDateLabel(dateKey: string) {
 }
 
 function formatTime(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("uk-UA", {
     timeZone: TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
@@ -233,7 +233,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
         id: dateKey,
         title: formatDateTitle(dateKey, todayKey, yesterdayKey),
         date: formatDateLabel(dateKey),
-        total: "0 kcal",
+        total: "0 ккал",
         items: []
       };
 
@@ -241,7 +241,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
       id: entry._id?.toString() ?? `${dateKey}-${day.items.length}`,
       dateKey,
       time: formatTime(createdAt),
-      name: readString(entry, ["foodDescription", "name", "title", "foodName", "description", "text"], "Untitled food"),
+      name: readString(entry, ["foodDescription", "name", "title", "foodName", "description", "text"], "Страва без назви"),
       mealType: getMealType(entry),
       kcal: nutrition.kcal,
       protein: nutrition.protein,
@@ -258,7 +258,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
 
     return {
       ...day,
-      total: `${total.toLocaleString("en-US")} kcal`,
+      total: `${total.toLocaleString("uk-UA")} ккал`,
       items: day.items.sort((a, b) => b.time.localeCompare(a.time))
     };
   });
@@ -266,7 +266,7 @@ function buildResponse(entries: FoodEntryDocument[]): HistoryResponse {
   days.sort((a, b) => b.id.localeCompare(a.id));
 
   return {
-    todayTotal: days.find((day) => day.id === todayKey)?.total ?? "0 kcal",
+    todayTotal: days.find((day) => day.id === todayKey)?.total ?? "0 ккал",
     days
   };
 }

@@ -44,21 +44,21 @@ type StatsData = {
 };
 
 const eventLabels: Record<EventType, string> = {
-  visit: "Визит",
-  click: "Нажатие",
-  bottom: "До конца",
+  visit: "Відвідування",
+  click: "Натискання",
+  bottom: "До кінця",
   bot_started: "Запуск бота",
-  quiz_completed: "Квиз пройден"
+  quiz_completed: "Квіз пройдено"
 };
 
 const statusLabels: Record<DeliveryStatus, string> = {
-  pending: "Отправляется",
+  pending: "Надсилається",
   sent: "Доставлено",
-  failed: "Ошибка"
+  failed: "Помилка"
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("uk-UA", {
     dateStyle: "short",
     timeStyle: "medium"
   }).format(new Date(value));
@@ -187,7 +187,7 @@ export default function NotificationStatsClient() {
   async function deleteSelectedEvents() {
     const selected = Object.values(selectedItems);
     if (selected.length === 0) return;
-    if (!window.confirm(`Удалить выбранные события (${selected.length})?`)) return;
+    if (!window.confirm(`Видалити вибрані події (${selected.length})?`)) return;
 
     const allCurrentPageSelected = Boolean(
       data?.events.length && data.events.every((item) => selectedItems[getEventKey(item)])
@@ -203,7 +203,7 @@ export default function NotificationStatsClient() {
       });
 
       if (!response.ok) {
-        window.alert("Не удалось удалить выбранные события.");
+        window.alert("Не вдалося видалити вибрані події.");
         return;
       }
 
@@ -214,14 +214,14 @@ export default function NotificationStatsClient() {
         setReloadKey((value) => value + 1);
       }
     } catch {
-      window.alert("Не удалось удалить выбранные события.");
+      window.alert("Не вдалося видалити вибрані події.");
     } finally {
       setDeletingSelected(false);
     }
   }
 
   async function deleteEvent(item: ActivityEvent) {
-    if (!window.confirm(`Удалить событие «${eventLabels[item.type]}»?`)) return;
+    if (!window.confirm(`Видалити подію «${eventLabels[item.type]}»?`)) return;
 
     setDeletingId(item.id);
     try {
@@ -232,7 +232,7 @@ export default function NotificationStatsClient() {
       });
 
       if (!response.ok) {
-        window.alert("Не удалось удалить событие.");
+        window.alert("Не вдалося видалити подію.");
         return;
       }
 
@@ -248,15 +248,15 @@ export default function NotificationStatsClient() {
         setReloadKey((value) => value + 1);
       }
     } catch {
-      window.alert("Не удалось удалить событие.");
+      window.alert("Не вдалося видалити подію.");
     } finally {
       setDeletingId("");
     }
   }
 
   const emptyMessage = query || eventType !== "all" || activitySource !== "all"
-    ? "По выбранным фильтрам событий нет."
-    : "События появятся после первого действия посетителя.";
+    ? "За вибраними фільтрами подій немає."
+    : "Події з’являться після першої дії відвідувача.";
 
   return (
     <main className="adminStatsPage">
@@ -269,37 +269,37 @@ export default function NotificationStatsClient() {
         </header>
 
         {data ? (
-          <section className="adminSummary" aria-label="Сводная статистика">
-            <article><span>Всего</span><strong>{data.summary.total}</strong></article>
-            <article><span>Сегодня</span><strong>{data.summary.today}</strong></article>
-            <article><span>За 7 дней</span><strong>{data.summary.lastSevenDays}</strong></article>
-            <article><span>Посетители</span><strong>{data.summary.uniqueVisitors}</strong></article>
+          <section className="adminSummary" aria-label="Зведена статистика">
+            <article><span>Усього</span><strong>{data.summary.total}</strong></article>
+            <article><span>Сьогодні</span><strong>{data.summary.today}</strong></article>
+            <article><span>За 7 днів</span><strong>{data.summary.lastSevenDays}</strong></article>
+            <article><span>Відвідувачі</span><strong>{data.summary.uniqueVisitors}</strong></article>
           </section>
         ) : null}
 
         <section className="adminActivityPanel" aria-live="polite">
           <div className="adminActivityHeader">
             <div>
-              <h2>Журнал действий</h2>
+              <h2>Журнал дій</h2>
               {data ? (
                 <p>
-                  Визиты: {data.summary.byType.visit ?? 0} · Нажатия: {data.summary.byType.click ?? 0} · До конца: {data.summary.byType.bottom ?? 0} · Запуски бота: {data.summary.byType.bot_started ?? 0} · Квизы: {data.summary.byType.quiz_completed ?? 0}
+                  Відвідування: {data.summary.byType.visit ?? 0} · Натискання: {data.summary.byType.click ?? 0} · До кінця: {data.summary.byType.bottom ?? 0} · Запуски бота: {data.summary.byType.bot_started ?? 0} · Квізи: {data.summary.byType.quiz_completed ?? 0}
                 </p>
               ) : null}
             </div>
             <form className="adminSearch" onSubmit={applySearch}>
               <input
-                aria-label="Поиск по журналу"
+                aria-label="Пошук у журналі"
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Страница, пользователь, IP…"
+                placeholder="Сторінка, користувач, IP…"
                 type="search"
                 value={searchInput}
               />
-              <button type="submit">Найти</button>
+              <button type="submit">Знайти</button>
             </form>
           </div>
 
-          <div className="adminFilters" aria-label="Фильтр типа события">
+          <div className="adminFilters" aria-label="Фільтр типу події">
             {(["all", "visit", "click", "bottom", "bot_started", "quiz_completed"] as const).map((value) => (
               <button
                 aria-pressed={eventType === value}
@@ -307,11 +307,11 @@ export default function NotificationStatsClient() {
                 onClick={() => changeType(value)}
                 type="button"
               >
-                {value === "all" ? "Все" : eventLabels[value]}
+                {value === "all" ? "Усі" : eventLabels[value]}
               </button>
             ))}
           </div>
-          <div className="adminFilters" aria-label="Фильтр среды">
+          <div className="adminFilters" aria-label="Фільтр середовища">
             {(["all", "browser", "telegram_webapp", "telegram_bot"] as const).map((value) => (
               <button
                 aria-pressed={activitySource === value}
@@ -319,31 +319,31 @@ export default function NotificationStatsClient() {
                 onClick={() => changeSource(value)}
                 type="button"
               >
-                {value === "all" ? "Все среды" : getSourceLabel(value)}
+                {value === "all" ? "Усі середовища" : getSourceLabel(value)}
               </button>
             ))}
           </div>
 
           {Object.keys(selectedItems).length > 0 ? (
             <div className="adminSelectionToolbar">
-              <span>Выбрано: {Object.keys(selectedItems).length}</span>
+              <span>Вибрано: {Object.keys(selectedItems).length}</span>
               <button
                 disabled={deletingSelected}
                 onClick={() => void deleteSelectedEvents()}
                 type="button"
               >
-                {deletingSelected ? "Удаление…" : "Удалить выбранные"}
+                {deletingSelected ? "Видалення…" : "Видалити вибрані"}
               </button>
             </div>
           ) : null}
 
           {status === "error" ? (
             <div className="adminState adminStateError">
-              <strong>Не удалось загрузить статистику</strong>
-              <p>Проверьте подключение к базе и повторите попытку.</p>
+              <strong>Не вдалося завантажити статистику</strong>
+              <p>Перевірте підключення до бази та повторіть спробу.</p>
             </div>
           ) : status === "loading" && !data ? (
-            <div className="adminState"><strong>Загрузка…</strong></div>
+            <div className="adminState"><strong>Завантаження…</strong></div>
           ) : data && data.events.length === 0 ? (
             <div className="adminState"><strong>{emptyMessage}</strong></div>
           ) : data ? (
@@ -354,21 +354,21 @@ export default function NotificationStatsClient() {
                     <tr>
                       <th className="adminSelectCell">
                         <input
-                          aria-label="Выбрать все события на странице"
+                          aria-label="Вибрати всі події на сторінці"
                           checked={data.events.length > 0 && data.events.every((item) => selectedItems[getEventKey(item)])}
                           disabled={deletingSelected || status === "loading"}
                           onChange={toggleCurrentPage}
                           type="checkbox"
                         />
                       </th>
-                      <th>Время</th>
-                      <th>Событие</th>
-                      <th>Среда</th>
-                      <th>Страница / действие</th>
-                      <th>Посетитель</th>
+                      <th>Час</th>
+                      <th>Подія</th>
+                      <th>Середовище</th>
+                      <th>Сторінка / дія</th>
+                      <th>Відвідувач</th>
                       <th>IP</th>
-                      <th>Отправка</th>
-                      <th aria-label="Действия" />
+                      <th>Надсилання</th>
+                      <th aria-label="Дії" />
                     </tr>
                   </thead>
                   <tbody>
@@ -379,7 +379,7 @@ export default function NotificationStatsClient() {
                       >
                         <td className="adminSelectCell">
                           <input
-                            aria-label={`Выбрать событие «${eventLabels[item.type]}»`}
+                            aria-label={`Вибрати подію «${eventLabels[item.type]}»`}
                             checked={Boolean(selectedItems[getEventKey(item)])}
                             disabled={deletingSelected}
                             onChange={() => toggleItem(item)}
@@ -391,7 +391,7 @@ export default function NotificationStatsClient() {
                         <td>{getSourceLabel(item.activitySource)}</td>
                         <td className="adminActionCell">
                           <strong>{item.path}</strong>
-                          {item.label ? <span>{item.label}</span> : item.referrer ? <span>из {item.referrer}</span> : null}
+                          {item.label ? <span>{item.label}</span> : item.referrer ? <span>з {item.referrer}</span> : null}
                         </td>
                         <td title={String(item.telegramUserId ?? item.visitorId)}>{getVisitorLabel(item)}</td>
                         <td>{item.ip}</td>
@@ -409,7 +409,7 @@ export default function NotificationStatsClient() {
                             onClick={() => void deleteEvent(item)}
                             type="button"
                           >
-                            {deletingId === item.id ? "Удаление…" : "Удалить"}
+                            {deletingId === item.id ? "Видалення…" : "Видалити"}
                           </button>
                         </td>
                       </tr>
@@ -419,7 +419,7 @@ export default function NotificationStatsClient() {
               </div>
 
               <div className="adminPagination">
-                <span>{data.pagination.total} событий · страница {data.pagination.page} из {data.pagination.pages}</span>
+                <span>{data.pagination.total} подій · сторінка {data.pagination.page} з {data.pagination.pages}</span>
                 <div>
                   <button disabled={page <= 1 || status === "loading"} onClick={() => setPage((value) => value - 1)} type="button">←</button>
                   <button disabled={page >= data.pagination.pages || status === "loading"} onClick={() => setPage((value) => value + 1)} type="button">→</button>

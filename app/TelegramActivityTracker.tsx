@@ -52,7 +52,7 @@ function getElementLabel(element: HTMLElement) {
     element.id ??
     element.tagName.toLowerCase();
 
-  return label.replace(/\s+/g, " ").trim().slice(0, 120) || "Без названия";
+  return label.replace(/\s+/g, " ").trim().slice(0, 120) || "Unnamed action";
 }
 
 function isLocalEnvironment() {

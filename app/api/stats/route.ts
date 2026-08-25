@@ -240,21 +240,24 @@ function getAverage(days: DayStats[], count: number) {
 
 function formatDelta(value: number, target: number) {
   if (target <= 0) {
-    return "0% vs target";
+    return "0% відносно цілі";
   }
 
   const percent = ((value - target) / target) * 100;
   const rounded = Math.round(percent * 10) / 10;
 
   if (rounded === 0) {
-    return "On target";
+    return "У межах цілі";
   }
 
-  return `${rounded > 0 ? "+" : ""}${rounded}% vs target`;
+  return `${rounded > 0 ? "+" : ""}${rounded}% відносно цілі`;
 }
 
-function plural(value: number, singular: string, pluralWord = `${singular}s`) {
-  return `${value} ${value === 1 ? singular : pluralWord}`;
+function formatDays(value: number) {
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+  const word = mod10 === 1 && mod100 !== 11 ? "день" : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? "дні" : "днів";
+  return `${value} ${word}`;
 }
 
 function getBestStreak(days: DayStats[]) {
@@ -282,11 +285,11 @@ function formatTrend(current: number, previous: number, unit: string) {
 function formatDayTrend(current: number, previous: number) {
   const diff = current - previous;
   if (diff === 0) {
-    return "0 days";
+    return "0 днів";
   }
 
-  const unit = Math.abs(diff) === 1 ? "day" : "days";
-  return `${diff > 0 ? "+" : ""}${diff} ${unit}`;
+  const formatted = formatDays(Math.abs(diff));
+  return `${diff > 0 ? "+" : "-"}${formatted}`;
 }
 
 function formatWeekRange(days: DayStats[]) {
@@ -294,12 +297,12 @@ function formatWeekRange(days: DayStats[]) {
   const last = days.at(-1)?.key;
 
   if (!first || !last) {
-    return "Selected week";
+    return "Вибраний тиждень";
   }
 
   const firstDate = getDayStartFromKey(first, TIME_ZONE);
   const lastDate = getDayStartFromKey(last, TIME_ZONE);
-  const formatter = new Intl.DateTimeFormat("en-US", {
+  const formatter = new Intl.DateTimeFormat("uk-UA", {
     timeZone: TIME_ZONE,
     month: "short",
     day: "numeric"
@@ -340,7 +343,7 @@ function buildResponse(entries: FoodEntryDocument[], calorieTarget: number, week
 
     return {
       key,
-      label: new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, weekday: "short" }).format(date),
+      label: new Intl.DateTimeFormat("uk-UA", { timeZone: TIME_ZONE, weekday: "short" }).format(date),
       calories,
       hasEntries: caloriesByDay.has(key),
       status: getStatus(calories, calorieTarget)
@@ -365,33 +368,33 @@ function buildResponse(entries: FoodEntryDocument[], calorieTarget: number, week
     },
     calorieDays: last7,
     averageCards: [
-      { label: "7 days", value: average7, delta: formatDelta(average7, calorieTarget) },
-      { label: "14 days", value: getAverage(allDays, 14), delta: formatDelta(getAverage(allDays, 14), calorieTarget) },
-      { label: "30 days", value: getAverage(allDays, 30), delta: formatDelta(getAverage(allDays, 30), calorieTarget) }
+      { label: "7 днів", value: average7, delta: formatDelta(average7, calorieTarget) },
+      { label: "14 днів", value: getAverage(allDays, 14), delta: formatDelta(getAverage(allDays, 14), calorieTarget) },
+      { label: "30 днів", value: getAverage(allDays, 30), delta: formatDelta(getAverage(allDays, 30), calorieTarget) }
     ],
     rangeCards: [
-      { label: "In target", value: `${hits7} / 7`, detail: "days within the goal range" },
-      { label: "Over", value: String(over7), detail: plural(over7, "day") + " above target" },
-      { label: "Under", value: String(under7), detail: plural(under7, "day") + " below target" },
-      { label: "Best streak", value: String(getBestStreak(last7)), detail: "days in a row" }
+      { label: "У межах цілі", value: `${hits7} / 7`, detail: "днів у цільовому діапазоні" },
+      { label: "Перевищення", value: String(over7), detail: `${formatDays(over7)} понад ціль` },
+      { label: "Нижче цілі", value: String(under7), detail: `${formatDays(under7)} нижче цілі` },
+      { label: "Найкраща серія", value: String(getBestStreak(last7)), detail: "днів поспіль" }
     ],
     weekComparison: [
       {
-        label: "Average calories",
+        label: "Середня кількість калорій",
         current: String(average7),
         previous: String(previousAverage7),
-        trend: formatTrend(average7, previousAverage7, "kcal")
+        trend: formatTrend(average7, previousAverage7, "ккал")
       },
       {
-        label: "Target hits",
-        current: plural(hits7, "day"),
-        previous: plural(previousHits7, "day"),
+        label: "Досягнення цілі",
+        current: formatDays(hits7),
+        previous: formatDays(previousHits7),
         trend: formatDayTrend(hits7, previousHits7)
       },
       {
-        label: "Over target",
-        current: plural(over7, "day"),
-        previous: plural(previousOver7, "day"),
+        label: "Понад ціль",
+        current: formatDays(over7),
+        previous: formatDays(previousOver7),
         trend: formatDayTrend(over7, previousOver7)
       }
     ]

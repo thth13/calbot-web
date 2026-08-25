@@ -5,13 +5,13 @@ import TelegramActivityTracker from "./TelegramActivityTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CalBot - AI calorie tracker in Telegram",
+  title: "CalBot — AI-трекер калорій у Telegram",
   description:
-    "CalBot landing page and Telegram dashboard: analyze food, track calories, macros, meals, and nutrition stats.",
+    "CalBot у Telegram: аналізуйте їжу, відстежуйте калорії, БЖВ, прийоми їжі та статистику харчування.",
   openGraph: {
-    title: "CalBot - AI calorie tracker in Telegram",
+    title: "CalBot — AI-трекер калорій у Telegram",
     description:
-      "Take a food photo in Telegram and CalBot will estimate calories, protein, fat, and carbs.",
+      "Сфотографуйте їжу в Telegram, і CalBot оцінить калорії, білки, жири та вуглеводи.",
     type: "website"
   }
 };
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="uk" suppressHydrationWarning>
       <head>
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
       </head>

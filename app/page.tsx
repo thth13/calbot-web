@@ -59,20 +59,20 @@ declare global {
 const macroMeta = {
   protein: {
     icon: "🥩",
-    label: "Protein",
-    unit: "g",
+    label: "Білки",
+    unit: "г",
     color: "#d7664f"
   },
   fat: {
     icon: "🥑",
-    label: "Fat",
-    unit: "g",
+    label: "Жири",
+    unit: "г",
     color: "#5aa469"
   },
   carbs: {
     icon: "🍚",
-    label: "Carbs",
-    unit: "g",
+    label: "Вуглеводи",
+    unit: "г",
     color: "#c89432"
   }
 } as const;
@@ -191,7 +191,7 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
         return;
       }
 
-      reject(new Error("Unable to generate share image"));
+      reject(new Error("Не вдалося створити зображення для поширення"));
     }, "image/png");
   });
 }
@@ -206,7 +206,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   const context = canvas.getContext("2d");
   if (!context) {
-    throw new Error("Canvas is not available");
+    throw new Error("Canvas недоступний");
   }
 
   context.scale(scale, scale);
@@ -233,20 +233,20 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText("Calories", 112, 372);
+  context.fillText("Калорії", 112, 372);
   context.font = "850 76px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#161412";
   context.fillText(`${data.day.calories}`, 112, 468);
   context.font = "760 32px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText(`/ ${data.day.calorieTarget} kcal`, 112, 520);
+  context.fillText(`/ ${data.day.calorieTarget} ккал`, 112, 520);
 
   context.textAlign = "right";
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-  context.fillText("Remaining", 968, 372);
+  context.fillText("Залишилося", 968, 372);
   context.font = "850 48px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#5aa469";
-  context.fillText(`${Math.max(data.day.calorieTarget - data.day.calories, 0)} kcal`, 968, 442);
+  context.fillText(`${Math.max(data.day.calorieTarget - data.day.calories, 0)} ккал`, 968, 442);
   context.textAlign = "left";
 
   drawProgress(context, 112, 548, 856, 22, percent(data.day.calories, data.day.calorieTarget), "#161412");
@@ -287,7 +287,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText("Last added food", 112, 1015);
+  context.fillText("Остання додана страва", 112, 1015);
   context.font = "850 42px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#161412";
   context.fillText(data.day.lastFood.slice(0, 34), 112, 1080);
@@ -301,7 +301,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
   context.font = "800 28px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#ffffff";
   context.textAlign = "center";
-  context.fillText(`${data.day.meals} meals tracked with CalBot`, width / 2, 1252);
+  context.fillText(`${data.day.meals} прийомів їжі відстежено з CalBot`, width / 2, 1252);
   context.textAlign = "left";
 
   const blob = await canvasToBlob(canvas);
@@ -310,11 +310,11 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
 function getDisplayName(user?: TelegramUser) {
   if (!user) {
-    return "Your day";
+    return "Ваш день";
   }
 
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-  return fullName || (user.username ? `@${user.username}` : "Your day");
+  return fullName || (user.username ? `@${user.username}` : "Ваш день");
 }
 
 function waitForTelegramWebApp(timeoutMs = 1500) {
@@ -447,12 +447,12 @@ function Dashboard({
           const errorBody = (await response.json().catch(() => undefined)) as
             | { detail?: string; error?: string }
             | undefined;
-          throw new Error(errorBody?.detail || errorBody?.error || "Telegram share failed");
+          throw new Error(errorBody?.detail || errorBody?.error || "Не вдалося поширити в Telegram");
         }
 
         const body = (await response.json()) as { preparedMessageId?: string };
         if (!body.preparedMessageId) {
-          throw new Error("Telegram prepared message is missing");
+          throw new Error("Підготовлене повідомлення Telegram відсутнє");
         }
 
         const wasSent = await new Promise<boolean>((resolve) => {
@@ -475,7 +475,7 @@ function Dashboard({
       const shareData = {
         files: [file],
         title: `CalBot ${day.title.toLowerCase()}`,
-        text: `My CalBot ${day.title.toLowerCase()}`
+        text: `Мій CalBot — ${day.title.toLowerCase()}`
       };
 
       if (navigator.canShare?.(shareData) && navigator.share) {
@@ -511,11 +511,11 @@ function Dashboard({
             <span>CalBot</span>
           </a>
           <button
-            aria-label="Share dashboard"
+            aria-label="Поділитися дашбордом"
             className="dashboardShareButton"
             disabled={shareStatus === "sharing"}
             onClick={handleShare}
-            title="Share"
+            title="Поділитися"
             type="button"
           >
             <ShareIcon />
@@ -524,9 +524,9 @@ function Dashboard({
 
         <div className="dashboardHero">
           <div>
-            <div className="daySwitcher" aria-label="Select dashboard day">
+            <div className="daySwitcher" aria-label="Вибрати день дашборда">
               <button
-                aria-label="Previous day"
+                aria-label="Попередній день"
                 disabled={isLoading}
                 onClick={() => onDateChange(shiftDateKey(selectedDate, -1))}
                 type="button"
@@ -535,7 +535,7 @@ function Dashboard({
               </button>
               <p className="eyebrow">{day.title}</p>
               <button
-                aria-label="Next day"
+                aria-label="Наступний день"
                 disabled={isLoading || !canGoForward}
                 onClick={() => onDateChange(shiftDateKey(selectedDate, 1))}
                 type="button"
@@ -545,9 +545,9 @@ function Dashboard({
             </div>
             <h1 id="dashboard-title">{userTitle}</h1>
           </div>
-          <div className="mealCounter" aria-label="Meal count">
+          <div className="mealCounter" aria-label="Кількість прийомів їжі">
             <strong>{day.meals}</strong>
-            <span>meals</span>
+            <span>прийомів їжі</span>
           </div>
         </div>
 
@@ -555,37 +555,37 @@ function Dashboard({
           className={`caloriePanel${calorieGoalReached ? " isGoalReached" : ""}${
             calorieOverLimit ? " isOverLimit" : ""
           }`}
-          aria-label={`Calories for ${day.title}`}
+          aria-label={`Калорії за ${day.title}`}
         >
           <div className="calorieSummary">
             <div>
-              <span>🔥 Calories</span>
+              <span>🔥 Калорії</span>
               <strong>
-                {day.calories} / {day.calorieTarget} kcal
+                {day.calories} / {day.calorieTarget} ккал
               </strong>
             </div>
             <div>
-              <span>{calorieGoalReached ? "Goal status" : "Remaining"}</span>
+              <span>{calorieGoalReached ? "Статус цілі" : "Залишилося"}</span>
               <strong
                 className={
                   calorieOverLimit ? "statusBadge overLimitText" : calorieGoalReached ? "goalReachedText" : undefined
                 }
               >
                 {calorieOverLimit
-                  ? `Over by ${calorieOverAmount} kcal`
+                  ? `Перевищено на ${calorieOverAmount} ккал`
                   : calorieGoalReached
-                    ? "Goal reached"
-                    : `${caloriesLeft} kcal`}
+                    ? "Цілі досягнуто"
+                    : `${caloriesLeft} ккал`}
               </strong>
             </div>
           </div>
 
-          <div className="progressTrack" aria-label={`Calories completed at ${calorieProgress}%`}>
+          <div className="progressTrack" aria-label={`Ціль калорій виконано на ${calorieProgress}%`}>
             <span style={{ width: `${calorieProgress}%` }} />
           </div>
         </section>
 
-        <section className="macroGrid" aria-label="Protein fat carbs">
+        <section className="macroGrid" aria-label="Білки, жири та вуглеводи">
           {data.macros.map((macro) => {
             const meta = macroMeta[macro.id];
             const macroProgress = percent(macro.current, macro.target);
@@ -609,14 +609,14 @@ function Dashboard({
                 </p>
                 {macroOverLimit ? (
                   <p className="goalReachedBadge overLimitText">
-                    Over by {macroOverAmount} {meta.unit}
+                    Перевищено на {macroOverAmount} {meta.unit}
                   </p>
                 ) : macroGoalReached ? (
-                  <p className="goalReachedBadge">Goal reached</p>
+                  <p className="goalReachedBadge">Цілі досягнуто</p>
                 ) : null}
                 <div
                   className="progressTrack compactTrack"
-                  aria-label={`${meta.label} completed at ${macroProgress}%`}
+                  aria-label={`${meta.label}: ціль виконано на ${macroProgress}%`}
                 >
                   <span style={{ width: `${macroProgress}%`, background: meta.color }} />
                 </div>
@@ -625,39 +625,39 @@ function Dashboard({
           })}
         </section>
 
-        <section className="lastFoodPanel" aria-label="Last added food">
-          <span>Last added food</span>
+        <section className="lastFoodPanel" aria-label="Остання додана страва">
+          <span>Остання додана страва</span>
           <strong>{day.lastFood}</strong>
           <p>{day.lastFoodTime}</p>
         </section>
 
-        <section className="quickActions" aria-label="Quick actions">
+        <section className="quickActions" aria-label="Швидкі дії">
           <a className="quickAction" href="/stats">
-            Stats
+            Статистика
           </a>
           <a className="quickAction" href="/history">
-            History
+            Історія
           </a>
         </section>
 
         {lastAction ? (
-          <p className="dashboardHint">Action sent: {lastAction}</p>
+          <p className="dashboardHint">Дію надіслано: {lastAction}</p>
         ) : null}
         {isLoading ? (
-          <p className="dashboardHint">Loading {selectedDate}...</p>
+          <p className="dashboardHint">Завантаження даних за {selectedDate}…</p>
         ) : null}
         {error ? (
           <p className="dashboardHint errorHint">{error}</p>
         ) : null}
         {shareStatus === "saved" ? (
-          <p className="dashboardHint">Image saved. Send it in Telegram or Instagram.</p>
+          <p className="dashboardHint">Зображення збережено. Надішліть його в Telegram або Instagram.</p>
         ) : null}
         {shareStatus === "sent" ? (
-          <p className="dashboardHint">Sent to your Telegram chat.</p>
+          <p className="dashboardHint">Надіслано у ваш чат Telegram.</p>
         ) : null}
         {shareStatus === "error" ? (
           <p className="dashboardHint errorHint">
-            {shareError || "Could not send the Telegram share."}
+            {shareError || "Не вдалося надіслати в Telegram."}
           </p>
         ) : null}
       </section>
@@ -683,7 +683,7 @@ export default function Home() {
     });
 
     if (!response.ok) {
-      throw new Error("Dashboard request failed");
+      throw new Error("Не вдалося завантажити дашборд");
     }
 
     return (await response.json()) as DashboardData;
@@ -745,14 +745,14 @@ export default function Home() {
       setDashboardData(await loadDashboardData(initData, nextDate));
     } catch {
       setSelectedDate(previousDate);
-      setDashboardError("Could not load this day.");
+      setDashboardError("Не вдалося завантажити дані за цей день.");
     } finally {
       setIsDashboardLoading(false);
     }
   }
 
   if (view === "checking") {
-    return <main className="routeLoader" aria-label="Loading" />;
+    return <main className="routeLoader" aria-label="Завантаження" />;
   }
 
   if (view === "dashboard" && dashboardData) {

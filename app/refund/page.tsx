@@ -2,108 +2,45 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund Policy - CalBot",
-  description: "Refund Policy for CalBot subscriptions processed by Paddle."
+  title: "Політика повернення коштів — CalBot",
+  description: "Політика повернення коштів за підписки CalBot, оброблені через Paddle."
 };
 
 export default function RefundPolicyPage() {
   return (
     <main className="legalPage">
-      <nav className="legalTopNav" aria-label="Legal navigation">
-        <Link className="brand" href="/">
-          <span className="brandMark">C</span>
-          <span>CalBot</span>
-        </Link>
+      <nav className="legalTopNav" aria-label="Навігація юридичними документами">
+        <Link className="brand" href="/"><span className="brandMark">C</span><span>CalBot</span></Link>
         <div>
-          <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy</Link>
-          <Link aria-current="page" href="/refund">
-            Refund
-          </Link>
+          <Link href="/terms">Умови</Link>
+          <Link href="/privacy">Конфіденційність</Link>
+          <Link aria-current="page" href="/refund">Повернення коштів</Link>
         </div>
       </nav>
-
       <article className="legalDocument">
         <header className="legalHeader">
-          <h1>Refund Policy</h1>
-          <p>Effective date: 1 May 2026</p>
+          <h1>Політика повернення коштів</h1>
+          <p>Дата набрання чинності: 1 травня 2026 року</p>
         </header>
-
         <section>
-          <p>
-            CalBot is operated by Pomo Cowork. Purchases and subscriptions for CalBot
-            are processed by Paddle, our merchant of record and authorized reseller.
-            Paddle&apos;s Buyer Terms and Refund Policy apply to your purchase.
-          </p>
-
+          <p>CalBot керує Pomo Cowork. Покупки та підписки CalBot обробляє Paddle — наш офіційний продавець і уповноважений реселер. До вашої покупки застосовуються Умови для покупців і Політика повернення коштів Paddle.</p>
           <div>
-            <h2>1. Paddle refund policy</h2>
-            <p>
-              Refunds are governed by Paddle&apos;s Refund Policy, which forms part of
-              Paddle&apos;s Buyer Terms. Paddle handles refund eligibility, statutory
-              withdrawal rights, discretionary refund requests, timing, and payment
-              method processing.
-            </p>
-            <p>
-              You can review Paddle&apos;s Buyer Terms at{" "}
-              <a href="https://www.paddle.com/legal/buyer-terms">
-                https://www.paddle.com/legal/buyer-terms
-              </a>{" "}
-              and Paddle&apos;s Refund Policy at{" "}
-              <a href="https://www.paddle.com/legal/refund-policy">
-                https://www.paddle.com/legal/refund-policy
-              </a>
-              .
-            </p>
+            <h2>1. Політика повернення коштів Paddle</h2>
+            <p>Повернення коштів регулюється Політикою повернення коштів Paddle, яка є частиною Умов для покупців Paddle. Paddle визначає право на повернення, законодавчі права на відмову, розглядає запити та проводить виплати.</p>
+            <p>Ознайомитися з Умовами для покупців Paddle можна на сторінці <a href="https://www.paddle.com/legal/buyer-terms">https://www.paddle.com/legal/buyer-terms</a>, а з Політикою повернення — на сторінці <a href="https://www.paddle.com/legal/refund-policy">https://www.paddle.com/legal/refund-policy</a>.</p>
           </div>
-
           <div>
-            <h2>2. Refund window</h2>
-            <p>
-              Our standard refund request window is 14 calendar days from the date of
-              the transaction. This 14-day window applies to initial subscription
-              purchases and renewal payments, unless a longer mandatory refund or
-              withdrawal right applies under your local consumer protection laws.
-            </p>
-            <p>
-              Submitting a refund request within 14 calendar days does not guarantee a
-              refund. Paddle reviews refund eligibility under Paddle&apos;s Refund Policy,
-              including statutory withdrawal rights, product usage, technical issues,
-              suspected fraud or abuse, and any other applicable legal requirements.
-            </p>
+            <h2>2. Строк подання запиту</h2>
+            <p>Стандартний строк подання запиту на повернення становить 14 календарних днів від дати транзакції. Він поширюється на першу покупку підписки та її поновлення, якщо місцеве законодавство не передбачає довшого строку.</p>
+            <p>Подання запиту протягом 14 днів не гарантує повернення. Paddle перевіряє право на нього з урахуванням використання продукту, технічних проблем, підозри на шахрайство чи зловживання та вимог законодавства.</p>
           </div>
-
+          <div><h2>3. Скасування</h2><p>Підписку можна скасувати через Paddle у будь-який час. Скасування набуде чинності наприкінці поточного розрахункового періоду та зупинить майбутні списання, як описано в Умовах для покупців Paddle.</p></div>
           <div>
-            <h2>3. Cancellations</h2>
-            <p>
-              You may cancel a subscription at any time through Paddle. Cancellation
-              takes effect at the end of the current billing period and prevents future
-              renewal charges, as described in Paddle&apos;s Buyer Terms.
-            </p>
+            <h2>4. Як подати запит на повернення</h2>
+            <p>Скористайтеся посиланням «Переглянути квитанцію» або «Керувати підпискою» в листі з підтвердженням транзакції, посиланням підтримки у квитанції чи на сторінці оплати або сайтом підтримки покупців Paddle: <a href="https://paddle.net">https://paddle.net</a>.</p>
+            <p>Якщо вам потрібна допомога з пошуком транзакції або зверненням до Paddle, зв’яжіться з підтримкою CalBot у Telegram.</p>
           </div>
-
-          <div>
-            <h2>4. How to request a refund</h2>
-            <p>
-              Request a refund through Paddle using the &quot;View receipt&quot; or
-              &quot;Manage subscription&quot; link in your transaction confirmation email, the
-              support link in your receipt or billing page, or Paddle&apos;s buyer support
-              site at{" "}
-              <a href="https://paddle.net">https://paddle.net</a>.
-            </p>
-            <p>
-              You may also contact us through the CalBot support flow in Telegram if
-              you need help identifying your transaction or reaching Paddle support.
-            </p>
-          </div>
-
-          <div>
-            <h2>5. Related documents</h2>
-            <p>
-              See also our <Link href="/terms">Terms of Service</Link> and{" "}
-              <Link href="/privacy">Privacy Policy</Link>.
-            </p>
-          </div>
+          <div><h2>5. Пов’язані документи</h2><p>Дивіться також наші <Link href="/terms">Умови користування</Link> та <Link href="/privacy">Політику конфіденційності</Link>.</p></div>
         </section>
       </article>
     </main>

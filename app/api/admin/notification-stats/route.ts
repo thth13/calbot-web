@@ -158,7 +158,7 @@ export async function POST(request: Request) {
                 label: {
                   $ifNull: [
                     { $concat: ["@", "$username"] },
-                    { $ifNull: ["$firstName", "Пользователь Telegram"] }
+                    { $ifNull: ["$firstName", "Користувач Telegram"] }
                   ]
                 },
                 visitorId: { $toString: "$telegramId" },
