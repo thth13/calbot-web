@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Script from "next/script";
-import SupportButton from "./SupportButton";
+// import SupportButton from "./SupportButton";
 import TelegramActivityTracker from "./TelegramActivityTracker";
 import "./globals.css";
 
@@ -30,7 +30,7 @@ export default function RootLayout({
       <body>
         <TelegramActivityTracker />
         {children}
-        <SupportButton />
+        {/* <SupportButton /> */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-18YQT06FRZ"
           strategy="afterInteractive"
