@@ -13,6 +13,222 @@
   --red: #d64f45;
 }
 
+.supportTrigger {
+  position: fixed;
+  z-index: 80;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid #191714;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 3px 3px 0 #cfc7bc;
+}
+
+.supportTrigger:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 #cfc7bc;
+}
+
+.supportBackdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  background: rgb(22 20 18 / 48%);
+  backdrop-filter: blur(3px);
+}
+
+.supportDialog {
+  width: min(480px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--paper-strong);
+  box-shadow: 0 18px 55px rgb(22 20 18 / 24%);
+}
+
+.supportDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.supportDialogHeader p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.supportDialogHeader h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.supportDialogHeader > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.supportDialogHeader > button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.supportForm {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.supportForm label {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.supportForm textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.supportForm textarea:focus {
+  border-color: var(--ink);
+  outline: 2px solid color-mix(in srgb, var(--blue) 20%, transparent);
+}
+
+.supportFormMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.supportFormMeta p {
+  margin: 0;
+  color: var(--red);
+}
+
+.supportForm > button,
+.supportSuccess button {
+  min-height: 46px;
+  margin-top: 4px;
+  border: 1px solid #191714;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.supportForm > button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.supportSuccess {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 28px 18px 18px;
+  text-align: center;
+}
+
+.supportSuccess > span {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: #edf9ef;
+  color: var(--green);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.supportSuccess strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.supportSuccess p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.supportSuccess button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+@media (max-width: 520px) {
+  .supportTrigger {
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .supportBackdrop {
+    padding: 0;
+  }
+
+  .supportDialog {
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
 .adminStatsPage {
   min-height: 100vh;
   padding: 18px 0 32px;
