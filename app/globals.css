@@ -792,7 +792,9 @@ main {
   width: 100%;
   height: auto;
   border-radius: 22px;
-  background: #eef1f4;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 72%), transparent 48%),
+    #e4e8eb;
 }
 
 .landingPhoneLeft {

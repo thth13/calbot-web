@@ -373,13 +373,28 @@ function Landing() {
 
         <div className="landingScreens" aria-label="Інтерфейс CalBot">
           <figure className="landingPhone landingPhoneLeft">
-            <img src="/phone-profile.webp" alt="Денна статистика калорій і макронутрієнтів у CalBot" />
+            <img
+              src="/phone-profile.webp"
+              alt="Денна статистика калорій і макронутрієнтів у CalBot"
+              width="852"
+              height="1847"
+            />
           </figure>
           <figure className="landingPhone landingPhoneCenter">
-            <img src="/phone-main.webp" alt="Аналіз страви за фото в Telegram-боті CalBot" />
+            <img
+              src="/phone-main.webp"
+              alt="Аналіз страви за фото в Telegram-боті CalBot"
+              width="853"
+              height="1844"
+            />
           </figure>
           <figure className="landingPhone landingPhoneRight">
-            <img src="/phone-stats.webp" alt="Тижнева статистика харчування в CalBot" />
+            <img
+              src="/phone-stats.webp"
+              alt="Тижнева статистика харчування в CalBot"
+              width="852"
+              height="1846"
+            />
           </figure>
         </div>
       </section>
