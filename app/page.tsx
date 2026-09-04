@@ -348,16 +348,16 @@ function Landing() {
           <span className="brandMark">C</span>
           <span>CalBot</span>
         </a>
-        <span className="landingTag">AI-трекер харчування</span>
+        <span className="landingTag">Калорії з фото · Telegram</span>
       </header>
 
       <section className="landingHero" id="top">
         <div className="landingCopy">
-          {/* <p className="eyebrow">Telegram-бот з AI</p> */}
-          <h1>Харчування під контролем — без зайвих підрахунків</h1>
+          <p className="landingEyebrow"><span aria-hidden="true">●</span> Працює прямо в Telegram</p>
+          <h1>Сфотографуйте їжу — отримайте калорії та БЖВ</h1>
           <p className="landingLead">
-            Надішліть фото страви й одразу отримайте калорії, БЖВ та зрозумілу
-            статистику прогресу.
+            CalBot розпізнає страву, оцінить порцію та автоматично збере статистику
+            харчування. Без ручного введення продуктів.
           </p>
           <a
             className="primaryAction landingAction"
@@ -367,37 +367,123 @@ function Landing() {
             target="_blank"
             rel="noreferrer"
           >
-            Спробувати в Telegram
+            <span aria-hidden="true">📸</span> Порахувати калорії з фото
           </a>
+          <p className="landingAssurance">14 днів безкоштовно · Без картки на старті</p>
+          <ul className="landingBenefits" aria-label="Переваги CalBot">
+            <li>Результат за кілька секунд</li>
+            <li>Нічого не потрібно встановлювати</li>
+          </ul>
         </div>
 
-        <div className="landingScreens" aria-label="Інтерфейс CalBot">
-          <figure className="landingPhone landingPhoneLeft">
+        <figure className="mealDemo" aria-labelledby="meal-demo-caption">
+          <div className="mealPhotoWrap">
             <img
-              src="/phone-profile.webp"
-              alt="Денна статистика калорій і макронутрієнтів у CalBot"
-              width="852"
-              height="1847"
+              src="/meal-analysis-example.jpg"
+              alt="Тарілка з куркою, картоплею, броколі та помідорами"
+              width="960"
+              height="960"
             />
+            <span className="photoSentBadge"><span aria-hidden="true">✓</span> Фото надіслано</span>
+          </div>
+          <div className="analysisConnector" aria-hidden="true">
+            <span>→</span>
+          </div>
+          <figcaption className="analysisCard" id="meal-demo-caption">
+            <div className="analysisHeader">
+              <span>CalBot визначив</span>
+              <strong>Курка, картопля та овочі</strong>
+            </div>
+            <div className="calorieResult">
+              <strong>500</strong>
+              <span>ккал</span>
+            </div>
+            <dl className="macroResults">
+              <div><dt>Білки</dt><dd>42 г</dd></div>
+              <div><dt>Жири</dt><dd>16 г</dd></div>
+              <div><dt>Вуглеводи</dt><dd>47 г</dd></div>
+            </dl>
+            <p><span aria-hidden="true">✓</span> Додано до статистики</p>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section className="landingSection howSection" aria-labelledby="how-title">
+        <div className="landingSectionHeader">
+          <p className="sectionLabel">Фото → результат</p>
+          <h2 id="how-title">Як це працює</h2>
+          <p>Один звичний чат замість таблиць, вагів і ручного пошуку продуктів.</p>
+        </div>
+        <ol className="howSteps">
+          <li>
+            <span className="stepIcon" aria-hidden="true">📸</span>
+            <div><small>01</small><h3>Надішліть фото їжі</h3><p>Просто сфотографуйте тарілку та відправте її боту.</p></div>
+          </li>
+          <li>
+            <span className="stepIcon" aria-hidden="true">🤖</span>
+            <div><small>02</small><h3>CalBot оцінить порцію</h3><p>Визначить видимі продукти, вагу, калорії та БЖВ.</p></div>
+          </li>
+          <li>
+            <span className="stepIcon" aria-hidden="true">📊</span>
+            <div><small>03</small><h3>Результат збереже сам</h3><p>Додасть прийом їжі до денної та тижневої статистики.</p></div>
+          </li>
+        </ol>
+        <p className="accuracyNote">
+          <strong>Чесно про точність:</strong> результат є оцінкою та залежить від видимості
+          інгредієнтів і розміру порції. Склад можна уточнити прямо в чаті.
+        </p>
+      </section>
+
+      <section className="landingSection productSection" aria-labelledby="product-title">
+        <div className="productCopy">
+          <p className="sectionLabel">Після кожного фото</p>
+          <h2 id="product-title">Вся картина харчування — уже зібрана</h2>
+          <p>
+            Переглядайте калорії, баланс БЖВ і прогрес за тиждень. CalBot запам’ятовує
+            кожен прийом їжі, тож вам не доведеться вести окремий щоденник.
+          </p>
+          <ul>
+            <li>Денний баланс калорій і БЖВ</li>
+            <li>Історія всіх прийомів їжі</li>
+            <li>Тижнева статистика прогресу</li>
+          </ul>
+        </div>
+        <div className="productPhones" aria-label="Статистика харчування в CalBot">
+          <figure className="productPhone productPhoneBack">
+            <img src="/phone-stats.webp" alt="Тижнева статистика в CalBot" width="852" height="1846" />
           </figure>
-          <figure className="landingPhone landingPhoneCenter">
-            <img
-              src="/phone-main.webp"
-              alt="Аналіз страви за фото в Telegram-боті CalBot"
-              width="853"
-              height="1844"
-            />
-          </figure>
-          <figure className="landingPhone landingPhoneRight">
-            <img
-              src="/phone-stats.webp"
-              alt="Тижнева статистика харчування в CalBot"
-              width="852"
-              height="1846"
-            />
+          <figure className="productPhone productPhoneFront">
+            <img src="/phone-profile.webp" alt="Денний баланс калорій і БЖВ у CalBot" width="852" height="1847" />
           </figure>
         </div>
       </section>
+
+      <section className="finalCta" aria-labelledby="final-cta-title">
+        <p className="sectionLabel">Перший результат — за кілька секунд</p>
+        <h2 id="final-cta-title">Сфотографуйте те, що їсте зараз</h2>
+        <a
+          className="primaryAction landingAction"
+          data-track-bot-open="true"
+          data-track-label="Open Telegram bot — final CTA"
+          href={BOT_URL}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <span aria-hidden="true">📸</span> Порахувати калорії з фото
+        </a>
+        <p>14 днів безкоштовно · Без картки на старті · Працює в Telegram</p>
+      </section>
+
+      <footer className="landingFooter">
+        <a className="brand" href="#top" aria-label="CalBot — на початок сторінки">
+          <span className="brandMark">C</span><span>CalBot</span>
+        </a>
+        <nav aria-label="Юридична інформація">
+          <a href="/privacy">Конфіденційність</a>
+          <a href="/terms">Умови</a>
+          <a href="/refund">Повернення коштів</a>
+        </nav>
+      </footer>
     </main>
   );
 }

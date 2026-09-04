@@ -6,11 +6,11 @@ import TelegramActivityTracker from "./TelegramActivityTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CalBot — AI-трекер калорій у Telegram",
+  title: "CalBot — калорії та БЖВ з фото в Telegram",
   description:
-    "CalBot у Telegram: аналізуйте їжу, відстежуйте калорії, БЖВ, прийоми їжі та статистику харчування.",
+    "Сфотографуйте їжу — CalBot оцінить калорії та БЖВ за кілька секунд і збере статистику харчування прямо в Telegram.",
   openGraph: {
-    title: "CalBot — AI-трекер калорій у Telegram",
+    title: "CalBot — калорії та БЖВ з фото в Telegram",
     description:
       "Сфотографуйте їжу в Telegram, і CalBot оцінить калорії, білки, жири та вуглеводи.",
     type: "website"
