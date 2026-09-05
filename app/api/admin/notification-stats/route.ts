@@ -21,6 +21,8 @@ const EVENT_TYPES: AdminEventType[] = [
 const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
 
 type StatsRequest = {
+  dateFrom?: unknown;
+  dateTo?: unknown;
   page?: unknown;
   type?: unknown;
   query?: unknown;
@@ -49,7 +51,7 @@ function getTimeZoneOffset(date: Date, timeZone: string) {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    hour12: false
+    hourCycle: "h23"
   }).formatToParts(date);
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   const asUtc = Date.UTC(
@@ -64,22 +66,24 @@ function getTimeZoneOffset(date: Date, timeZone: string) {
   return asUtc - date.getTime();
 }
 
-function getTodayStart() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(now);
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const localMidnight = new Date(Date.UTC(
-    Number(values.year),
-    Number(values.month) - 1,
-    Number(values.day)
-  ));
+function dateStart(value: string) {
+  const midnight = new Date(`${value}T00:00:00.000Z`);
+  let result = midnight;
+  for (let i = 0; i < 3; i += 1) {
+    result = new Date(midnight.getTime() - getTimeZoneOffset(result, TIME_ZONE));
+  }
+  return result;
+}
 
-  return new Date(localMidnight.getTime() - getTimeZoneOffset(localMidnight, TIME_ZONE));
+function validDate(value: unknown): value is string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+}
+
+function nextDate(value: string) {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10);
 }
 
 export async function POST(request: Request) {
@@ -95,7 +99,18 @@ export async function POST(request: Request) {
     body?.activitySource === "telegram_bot"
       ? body.activitySource
       : undefined;
-  const filter: Document = {};
+  const todayKey = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(new Date());
+  const dateFrom = body?.dateFrom ?? todayKey;
+  const dateTo = body?.dateTo ?? todayKey;
+  if (!validDate(dateFrom) || !validDate(dateTo) || dateFrom > dateTo ||
+      (Date.parse(dateTo) - Date.parse(dateFrom)) / 86400000 > 365) {
+    return NextResponse.json({ error: "Оберіть коректний період до 366 днів." }, { status: 400 });
+  }
+  const filter: Document = {
+    createdAt: { $gte: dateStart(dateFrom), $lt: dateStart(nextDate(dateTo)) }
+  };
 
   if (type) {
     filter.type = type;
@@ -125,7 +140,7 @@ export async function POST(request: Request) {
     const db = await getMongoDb();
     const collection = db.collection(ADMIN_ACTIVITY_COLLECTION);
     const now = new Date();
-    const today = getTodayStart();
+    const today = dateStart(todayKey);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const allEventsPipeline: Document[] = [
       {
@@ -179,9 +194,9 @@ export async function POST(request: Request) {
       }
     ];
     const aggregate = <T extends Document>(pipeline: Document[]) =>
-      collection.aggregate<T>([...allEventsPipeline, ...pipeline]).toArray();
+      collection.aggregate<T>([...allEventsPipeline, { $match: filter }, ...pipeline]).toArray();
 
-    const [events, filteredTotal, total, todayTotal, lastSevenDays, uniqueVisitors, byType] =
+    const [events, filteredTotal, total, todayTotal, lastSevenDays, uniqueVisitors, byType, dailyCounts] =
       await Promise.all([
         aggregate([
           { $match: filter },
@@ -206,13 +221,28 @@ export async function POST(request: Request) {
         ]),
         aggregate<{ _id: AdminEventType; count: number }>([
           { $group: { _id: "$type", count: { $sum: 1 } } }
+        ]),
+        aggregate<{ _id: string; count: number }>([
+          { $group: {
+            _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d", timezone: TIME_ZONE } },
+            count: { $sum: 1 }
+          } },
+          { $sort: { _id: 1 } }
         ])
       ]);
 
     const readCount = (result: Document[]) => result[0]?.count ?? 0;
     const filteredCount = readCount(filteredTotal);
 
+    const counts = new Map(dailyCounts.map((day) => [day._id, day.count]));
+    const days = [];
+    for (let date = dateFrom; date <= dateTo; date = nextDate(date)) {
+      days.push({ date, count: counts.get(date) ?? 0 });
+    }
+
     return NextResponse.json({
+      days,
+      timeZone: TIME_ZONE,
       summary: {
         total: readCount(total),
         today: readCount(todayTotal),

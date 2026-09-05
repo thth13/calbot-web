@@ -3413,3 +3413,39 @@ footer nav a:hover {
     transition: none;
   }
 }
+
+.adminPeriodPanel,
+.adminDailyPanel { padding: 20px; }
+.adminPeriodPanel .adminFilters { padding: 0 0 16px; }
+.adminPeriodNav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.adminPeriodNav strong { text-align: center; }
+.adminPeriodNav button,
+.adminDateFilters button,
+.adminDailyPanel button {
+  min-height: 38px; padding: 0 13px; border: 1px solid var(--line-strong);
+  border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer;
+}
+.adminPeriodPanel button:hover:not(:disabled),
+.adminDailyPanel button:hover:not(:disabled) { background: var(--line); color: var(--ink); }
+.adminPeriodPanel button:disabled { opacity: .4; cursor: default; }
+.adminPeriodPanel button:focus-visible,
+.adminPeriodPanel input:focus-visible,
+.adminDailyPanel button:focus-visible,
+.adminDailyScroll:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.adminDateFilters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-top: 18px; }
+.adminDateFilters label { display: grid; gap: 6px; font-size: 13px; min-width: 0; }
+.adminDateFilters input { min-height: 38px; min-width: 0; max-width: 100%; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper); color: var(--text); font: inherit; }
+.adminPeriodHint, .adminDailyPanel > p { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+.adminDailyPanel { min-height: 350px; }
+.adminDailyPanel h2 { font-size: 22px; }
+.adminDailyScroll { overflow-x: auto; padding: 12px 0; scrollbar-color: var(--line-strong) var(--paper); }
+.adminDailyChart { display: grid; gap: 8px; min-width: 100%; }
+.adminDailyDay { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11px; font-variant-numeric: tabular-nums; }
+.adminDailyTrack { height: 180px; width: 100%; display: flex; align-items: end; justify-content: center; border-bottom: 1px solid var(--line); }
+.adminDailyTrack > span { display: block; width: 70%; max-width: 56px; background: var(--blue); border-radius: 4px 4px 0 0; }
+.adminDailyDay strong { font-size: 12px; }
+@media (max-width: 600px) {
+  .adminPeriodPanel, .adminDailyPanel { padding: 14px; }
+  .adminPeriodNav strong { font-size: 14px; }
+  .adminDateFilters label { flex: 1 1 120px; }
+}

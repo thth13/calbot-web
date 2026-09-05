@@ -27,6 +27,8 @@ type ActivityEvent = {
 };
 
 type StatsData = {
+  days: Array<{ date: string; count: number }>;
+  timeZone: string;
   summary: {
     total: number;
     today: number;
@@ -58,8 +60,9 @@ const statusLabels: Record<DeliveryStatus, string> = {
   failed: "Помилка"
 };
 
-function formatDate(value: string) {
+function formatDate(value: string, timeZone: string) {
   return new Intl.DateTimeFormat("uk-UA", {
+    timeZone,
     dateStyle: "short",
     timeStyle: "medium"
   }).format(new Date(value));
@@ -88,7 +91,47 @@ function getEventKey(item: Pick<ActivityEvent, "id" | "source">) {
   return `${item.source}:${item.id}`;
 }
 
-export default function NotificationStatsClient() {
+type Period = "week" | "month" | "custom";
+
+function calendarRange(anchor: string, period: "week" | "month", offset = 0) {
+  const start = new Date(`${anchor}T00:00:00Z`);
+  if (period === "week") {
+    start.setUTCDate(start.getUTCDate() - (start.getUTCDay() + 6) % 7 + offset * 7);
+  } else {
+    start.setUTCDate(1);
+    start.setUTCMonth(start.getUTCMonth() + offset);
+  }
+  const end = new Date(start);
+  if (period === "week") end.setUTCDate(end.getUTCDate() + 6);
+  else { end.setUTCMonth(end.getUTCMonth() + 1); end.setUTCDate(0); }
+  return { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
+}
+
+function calendarLabel(value: string, options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) {
+  return new Intl.DateTimeFormat("uk-UA", { ...options, timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
+}
+
+export default function NotificationStatsClient({ timeZone }: { timeZone: string }) {
+  const [period, setPeriod] = useState<Period>("week");
+  const [range, setRange] = useState<{ from: string; to: string }>();
+  const [fromInput, setFromInput] = useState("");
+  const [toInput, setToInput] = useState("");
+  const [dateError, setDateError] = useState("");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const initial = calendarRange(today, "week");
+    const from = params.get("from");
+    const to = params.get("to");
+    const valid = (value: string | null): value is string => Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value);
+    if (valid(from) && valid(to) && from <= to && Date.parse(to) - Date.parse(from) <= 365 * 86400000) {
+      initial.from = from; initial.to = to;
+      const mode = params.get("period");
+      const expected = mode === "week" || mode === "month" ? calendarRange(from, mode) : undefined;
+      setPeriod(expected?.from === from && expected.to === to ? mode as Period : "custom");
+    }
+    setRange(initial); setFromInput(initial.from); setToInput(initial.to);
+  }, [timeZone]);
   const [data, setData] = useState<StatsData>();
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [eventType, setEventType] = useState<EventType | "all">("all");
@@ -102,7 +145,9 @@ export default function NotificationStatsClient() {
   const [deletingSelected, setDeletingSelected] = useState(false);
 
   useEffect(() => {
+    if (!range) return;
     let active = true;
+    const controller = new AbortController();
 
     async function loadStats() {
       setStatus("loading");
@@ -110,9 +155,12 @@ export default function NotificationStatsClient() {
       try {
         const response = await fetch("/api/admin/notification-stats", {
           method: "POST",
+          signal: controller.signal,
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             page,
+            dateFrom: range?.from,
+            dateTo: range?.to,
             type: eventType === "all" ? undefined : eventType,
             activitySource: activitySource === "all" ? undefined : activitySource,
             query
@@ -125,7 +173,9 @@ export default function NotificationStatsClient() {
           return;
         }
 
-        setData((await response.json()) as StatsData);
+        const result = (await response.json()) as StatsData;
+        if (!active) return;
+        setData(result);
         setStatus("ready");
       } catch {
         if (active) setStatus("error");
@@ -135,8 +185,26 @@ export default function NotificationStatsClient() {
     void loadStats();
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [activitySource, eventType, page, query, reloadKey]);
+  }, [activitySource, eventType, page, query, reloadKey, range]);
+
+  function changeRange(next: { from: string; to: string }, mode: Period) {
+    setPeriod(mode); setRange(next); setFromInput(next.from); setToInput(next.to);
+    setDateError(""); setPage(1); setSelectedItems({});
+    const url = new URL(window.location.href);
+    url.searchParams.set("from", next.from); url.searchParams.set("to", next.to); url.searchParams.set("period", mode);
+    window.history.replaceState(null, "", url);
+  }
+
+  function applyDates(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!fromInput || !toInput || fromInput > toInput || Date.parse(toInput) - Date.parse(fromInput) > 365 * 86400000) {
+      setDateError("Оберіть початкову й кінцеву дати: період має бути від 1 до 366 днів.");
+      return;
+    }
+    changeRange({ from: fromInput, to: toInput }, "custom");
+  }
 
   function applySearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -255,7 +323,7 @@ export default function NotificationStatsClient() {
     }
   }
 
-  const emptyMessage = query || eventType !== "all" || activitySource !== "all"
+  const emptyMessage = range || query || eventType !== "all" || activitySource !== "all"
     ? "За вибраними фільтрами подій немає."
     : "Події з’являться після першої дії відвідувача.";
 
@@ -269,26 +337,69 @@ export default function NotificationStatsClient() {
           </a>
         </header>
 
-        {data ? (
+        <section className="adminActivityPanel adminPeriodPanel" aria-label="Період статистики">
+          <div className="adminFilters">
+            {(["week", "month"] as const).map((mode) => (
+              <button key={mode} type="button" aria-pressed={period === mode} disabled={!range}
+                onClick={() => range && changeRange(calendarRange(range.from, mode), mode)}>
+                {mode === "week" ? "Тиждень" : "Місяць"}
+              </button>
+            ))}
+          </div>
+          {range && <div className="adminPeriodNav">
+            <button type="button" disabled={period === "custom"} aria-label="Попередній період"
+              onClick={() => period !== "custom" && changeRange(calendarRange(range.from, period, -1), period)}>←</button>
+            <strong>{period === "month" ? calendarLabel(range.from, { month: "long", year: "numeric" }) : `${calendarLabel(range.from)} — ${calendarLabel(range.to)}`}</strong>
+            <button type="button" disabled={period === "custom"} aria-label="Наступний період"
+              onClick={() => period !== "custom" && changeRange(calendarRange(range.from, period, 1), period)}>→</button>
+          </div>}
+          <form className="adminDateFilters" onSubmit={applyDates} noValidate>
+            <label>Від<input type="date" value={fromInput} max={toInput || undefined} onChange={(event) => setFromInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <label>До<input type="date" value={toInput} min={fromInput || undefined} onChange={(event) => setToInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <button type="submit">Застосувати дати</button>
+          </form>
+          {dateError && <p id="admin-date-error" role="alert">{dateError}</p>}
+          <p className="adminPeriodHint">Дати включно · {data?.timeZone ?? timeZone} · Фільтри застосовуються до графіка, зведення та журналу.</p>
+        </section>
+
+        {data && status === "ready" ? (
           <section className="adminSummary" aria-label="Зведена статистика">
-            <article><span>Усього</span><strong>{data.summary.total}</strong></article>
-            <article><span>Сьогодні</span><strong>{data.summary.today}</strong></article>
-            <article><span>За 7 днів</span><strong>{data.summary.lastSevenDays}</strong></article>
+            <article><span>За вибраний період</span><strong>{data.summary.total}</strong></article>
+            <article><span>Сьогодні в періоді</span><strong>{data.summary.today}</strong></article>
+            <article><span>За останні 7 днів у періоді</span><strong>{data.summary.lastSevenDays}</strong></article>
             <article><span>Відвідувачі</span><strong>{data.summary.uniqueVisitors}</strong></article>
           </section>
         ) : null}
+
+        <section className="adminActivityPanel adminDailyPanel" aria-label="Події за днями" aria-busy={status === "loading"}>
+          <h2>Події за днями</h2>
+          {status === "loading" ? <div className="adminState" role="status">Завантаження…</div> : status === "error" ?
+            <div className="adminState" role="alert">Не вдалося завантажити дані. <button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторити</button></div> : data ? <>
+            <p>{data.summary.total === 0 ? "За вибраний період подій немає." : `Усього за період: ${data.summary.total}`}</p>
+            <div className="adminDailyScroll" tabIndex={0} aria-label="Графік за днями, прокрутіть для перегляду всіх дат">
+              <div className="adminDailyChart" style={{ gridTemplateColumns: `repeat(${data.days.length}, minmax(34px, 1fr))` }}>
+                {data.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} подій`}>
+                  <div className="adminDailyTrack"><span style={{ height: `${day.count / Math.max(1, ...data.days.map((item) => item.count)) * 100}%` }} /></div>
+                  <strong>{day.count}</strong>
+                  <span>{calendarLabel(day.date, { day: "2-digit", month: "2-digit" })}</span>
+                  <span>{calendarLabel(day.date, { weekday: "short" })}</span>
+                </div>)}
+              </div>
+            </div>
+          </> : null}
+        </section>
 
         <section className="adminActivityPanel" aria-live="polite">
           <div className="adminActivityHeader">
             <div>
               <h2>Журнал дій</h2>
-              {data ? (
+              {data && status === "ready" ? (
                 <p>
                   Відвідування: {data.summary.byType.visit ?? 0} · Натискання: {data.summary.byType.click ?? 0} · До кінця: {data.summary.byType.bottom ?? 0} · Запуски бота: {data.summary.byType.bot_started ?? 0} · Квізи: {data.summary.byType.quiz_completed ?? 0}
                 </p>
               ) : null}
             </div>
-            <form className="adminSearch" onSubmit={applySearch}>
+            <form className="adminSearch" onSubmit={applySearch} noValidate>
               <input
                 aria-label="Пошук у журналі"
                 onChange={(event) => setSearchInput(event.target.value)}
@@ -387,7 +498,7 @@ export default function NotificationStatsClient() {
                             type="checkbox"
                           />
                         </td>
-                        <td className="adminDateCell">{formatDate(item.createdAt)}</td>
+                        <td className="adminDateCell">{formatDate(item.createdAt, timeZone)}</td>
                         <td><span className={`eventBadge ${item.type}`}>{eventLabels[item.type]}</span></td>
                         <td>{getSourceLabel(item.activitySource)}</td>
                         <td className="adminActionCell">

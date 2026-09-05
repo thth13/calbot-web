@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function NotificationStatsPage() {
-  return <NotificationStatsClient />;
+  return <NotificationStatsClient timeZone={process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv"} />;
 }
