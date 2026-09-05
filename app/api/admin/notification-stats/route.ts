@@ -146,7 +146,18 @@ export async function POST(request: Request) {
     const allEventsPipeline: Document[] = [
       {
         $project: {
-          type: 1,
+          type: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$type", "section_view"] },
+                  { $eq: ["$label", "Низ сторінки"] }
+                ]
+              },
+              "bottom",
+              "$type"
+            ]
+          },
           path: 1,
           label: 1,
           referrer: 1,

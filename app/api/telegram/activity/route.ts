@@ -209,7 +209,7 @@ export async function POST(request: Request) {
   try {
     const db = await getMongoDb();
     const result = await db.collection<AdminActivityDocument>(ADMIN_ACTIVITY_COLLECTION).insertOne({
-      type,
+      type: type === "section_view" && body?.target === "page_bottom" ? "bottom" : type,
       path,
       ...(label ? { label } : {}),
       ...(referrer ? { referrer } : {}),
