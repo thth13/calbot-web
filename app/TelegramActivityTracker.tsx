@@ -9,7 +9,7 @@ type ActivityEvent = {
   label?: string;
   referrer?: string;
   visitorId: string;
-  target?: "open_bot" | "daily_progress";
+  target?: "open_bot" | "daily_progress" | "page_bottom";
 };
 
 const BOT_OPEN_SELECTOR = "[data-track-bot-open]";
@@ -98,10 +98,12 @@ export default function TelegramActivityTracker() {
   const visitorIdRef = useRef<string>("");
   const lastVisitedPathRef = useRef("");
   const progressTrackedRef = useRef(false);
+  const bottomTrackedRef = useRef(false);
 
   useEffect(() => {
     if (pathname !== "/") {
       progressTrackedRef.current = false;
+      bottomTrackedRef.current = false;
       return;
     }
 
@@ -143,7 +145,25 @@ export default function TelegramActivityTracker() {
 
     function checkProgressReached() {
       scrollFrame = 0;
-      if (progressTrackedRef.current || window.scrollY <= 0) {
+      if (window.scrollY <= 0) {
+        return;
+      }
+
+      if (
+        !bottomTrackedRef.current &&
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2
+      ) {
+        bottomTrackedRef.current = true;
+        sendActivity({
+          type: "section_view",
+          path: getCurrentPath(),
+          label: "Низ сторінки",
+          visitorId: visitorIdRef.current,
+          target: "page_bottom"
+        });
+      }
+
+      if (progressTrackedRef.current) {
         return;
       }
 
@@ -163,7 +183,7 @@ export default function TelegramActivityTracker() {
     }
 
     function handleScroll() {
-      if (!scrollFrame && !progressTrackedRef.current) {
+      if (!scrollFrame && (!progressTrackedRef.current || !bottomTrackedRef.current)) {
         scrollFrame = window.requestAnimationFrame(checkProgressReached);
       }
     }

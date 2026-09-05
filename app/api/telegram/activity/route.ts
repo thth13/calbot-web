@@ -156,7 +156,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown click target" }, { status: 400 });
   }
 
-  if (type === "section_view" && body?.target !== "daily_progress") {
+  if (
+    type === "section_view" &&
+    body?.target !== "daily_progress" &&
+    body?.target !== "page_bottom"
+  ) {
     return NextResponse.json({ error: "Unknown section target" }, { status: 400 });
   }
 
@@ -186,7 +190,9 @@ export async function POST(request: Request) {
   const source: AdminActivitySource = telegramUser ? "telegram_webapp" : "browser";
 
   const message = [
-    eventTitles[type],
+    type === "section_view" && body?.target === "page_bottom"
+      ? "📜 Доскролили до низу сторінки"
+      : eventTitles[type],
     `📄 Page: ${path}`,
     type === "click" ? `🎯 Action: ${label ?? "Unnamed action"}` : undefined,
     type === "visit" && referrer ? `↗️ Referrer: ${referrer}` : undefined,
