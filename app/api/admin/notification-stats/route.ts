@@ -21,6 +21,7 @@ const EVENT_TYPES: AdminEventType[] = [
 const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
 
 type StatsRequest = {
+  view?: unknown;
   dateFrom?: unknown;
   dateTo?: unknown;
   page?: unknown;
@@ -195,6 +196,21 @@ export async function POST(request: Request) {
     ];
     const aggregate = <T extends Document>(pipeline: Document[]) =>
       collection.aggregate<T>([...allEventsPipeline, { $match: filter }, ...pipeline]).toArray();
+
+    if (body?.view === "chart") {
+      const counts = await aggregate<{ _id: string; count: number }>([
+        { $group: {
+          _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d", timezone: TIME_ZONE } },
+          count: { $sum: 1 }
+        } }
+      ]);
+      const byDate = new Map(counts.map((day) => [day._id, day.count]));
+      const days = [];
+      for (let date = dateFrom; date <= dateTo; date = nextDate(date)) {
+        days.push({ date, count: byDate.get(date) ?? 0 });
+      }
+      return NextResponse.json({ days, timeZone: TIME_ZONE });
+    }
 
     const [events, filteredTotal, total, todayTotal, lastSevenDays, uniqueVisitors, byType, dailyCounts] =
       await Promise.all([

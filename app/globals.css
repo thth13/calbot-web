@@ -3449,3 +3449,21 @@ footer nav a:hover {
   .adminPeriodNav strong { font-size: 14px; }
   .adminDateFilters label { flex: 1 1 120px; }
 }
+
+.adminChartHeader { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 20px; }
+.adminChartHeader h2 { margin: 0; margin-right: auto; }
+.adminChartHeader .adminFilters { padding: 0; gap: 4px; }
+.adminChartHeader .adminFilters button { min-height: 32px; padding: 0 10px; font-size: 12px; }
+.adminChartHeader .adminPeriodNav { justify-content: flex-start; gap: 6px; }
+.adminChartHeader .adminPeriodNav strong { min-width: 190px; font-size: 13px; font-weight: 600; }
+.adminChartHeader .adminPeriodNav button { min-height: 32px; width: 32px; padding: 0; border-color: transparent; background: transparent; }
+.adminChartHeader .adminPeriodNav button:hover { background: var(--paper); }
+.adminJournalDates { padding: 0 20px 16px; }
+.adminJournalDates .adminDateFilters { margin-top: 0; }
+.adminJournalDates button:focus-visible,
+.adminJournalDates input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.adminJournalDates button:hover { background: var(--line); }
+@media (max-width: 600px) {
+  .adminChartHeader { gap: 12px; }
+  .adminChartHeader .adminPeriodNav { width: 100%; justify-content: center; }
+}

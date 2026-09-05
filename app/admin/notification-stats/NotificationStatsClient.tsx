@@ -91,7 +91,7 @@ function getEventKey(item: Pick<ActivityEvent, "id" | "source">) {
   return `${item.source}:${item.id}`;
 }
 
-type Period = "week" | "month" | "custom";
+type Period = "week" | "month";
 
 function calendarRange(anchor: string, period: "week" | "month", offset = 0) {
   const start = new Date(`${anchor}T00:00:00Z`);
@@ -113,6 +113,10 @@ function calendarLabel(value: string, options: Intl.DateTimeFormatOptions = { da
 
 export default function NotificationStatsClient({ timeZone }: { timeZone: string }) {
   const [period, setPeriod] = useState<Period>("week");
+  const [chartData, setChartData] = useState<Pick<StatsData, "days">>();
+  const [chartStatus, setChartStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [chartReloadKey, setChartReloadKey] = useState(0);
+  const [journalRange, setJournalRange] = useState<{ from: string; to: string }>();
   const [range, setRange] = useState<{ from: string; to: string }>();
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
@@ -125,12 +129,15 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
     const to = params.get("to");
     const valid = (value: string | null): value is string => Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value);
     if (valid(from) && valid(to) && from <= to && Date.parse(to) - Date.parse(from) <= 365 * 86400000) {
-      initial.from = from; initial.to = to;
-      const mode = params.get("period");
-      const expected = mode === "week" || mode === "month" ? calendarRange(from, mode) : undefined;
-      setPeriod(expected?.from === from && expected.to === to ? mode as Period : "custom");
+      setJournalRange({ from, to }); setFromInput(from); setToInput(to);
     }
-    setRange(initial); setFromInput(initial.from); setToInput(initial.to);
+    else {
+      setJournalRange(initial); setFromInput(initial.from); setToInput(initial.to);
+    }
+    const chartFrom = params.get("chartFrom");
+    const chartPeriod = params.get("chartPeriod") === "month" ? "month" : "week";
+    setPeriod(chartPeriod);
+    setRange(calendarRange(valid(chartFrom) ? chartFrom : today, chartPeriod));
   }, [timeZone]);
   const [data, setData] = useState<StatsData>();
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -145,7 +152,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   const [deletingSelected, setDeletingSelected] = useState(false);
 
   useEffect(() => {
-    if (!range) return;
+    if (!journalRange) return;
     let active = true;
     const controller = new AbortController();
 
@@ -159,8 +166,8 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             page,
-            dateFrom: range?.from,
-            dateTo: range?.to,
+            dateFrom: journalRange?.from,
+            dateTo: journalRange?.to,
             type: eventType === "all" ? undefined : eventType,
             activitySource: activitySource === "all" ? undefined : activitySource,
             query
@@ -187,13 +194,33 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
       active = false;
       controller.abort();
     };
-  }, [activitySource, eventType, page, query, reloadKey, range]);
+  }, [activitySource, eventType, page, query, reloadKey, journalRange]);
+
+  useEffect(() => {
+    if (!range) return;
+    const controller = new AbortController();
+    let active = true;
+    setChartStatus("loading");
+    async function loadChart() {
+      try {
+        const response = await fetch("/api/admin/notification-stats", {
+          method: "POST", signal: controller.signal,
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ view: "chart", dateFrom: range?.from, dateTo: range?.to })
+        });
+        if (!response.ok) throw new Error("Could not load chart");
+        const result = await response.json() as Pick<StatsData, "days">;
+        if (active) { setChartData(result); setChartStatus("ready"); }
+      } catch { if (active) setChartStatus("error"); }
+    }
+    void loadChart();
+    return () => { active = false; controller.abort(); };
+  }, [range, reloadKey, chartReloadKey]);
 
   function changeRange(next: { from: string; to: string }, mode: Period) {
-    setPeriod(mode); setRange(next); setFromInput(next.from); setToInput(next.to);
-    setDateError(""); setPage(1); setSelectedItems({});
+    setPeriod(mode); setRange(next);
     const url = new URL(window.location.href);
-    url.searchParams.set("from", next.from); url.searchParams.set("to", next.to); url.searchParams.set("period", mode);
+    url.searchParams.set("chartFrom", next.from); url.searchParams.set("chartPeriod", mode);
     window.history.replaceState(null, "", url);
   }
 
@@ -203,7 +230,12 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
       setDateError("Оберіть початкову й кінцеву дати: період має бути від 1 до 366 днів.");
       return;
     }
-    changeRange({ from: fromInput, to: toInput }, "custom");
+    setJournalRange({ from: fromInput, to: toInput });
+    setDateError(""); setPage(1); setSelectedItems({});
+    const url = new URL(window.location.href);
+    url.searchParams.set("from", fromInput); url.searchParams.set("to", toInput);
+    url.searchParams.delete("period");
+    window.history.replaceState(null, "", url);
   }
 
   function applySearch(event: FormEvent<HTMLFormElement>) {
@@ -323,7 +355,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
     }
   }
 
-  const emptyMessage = range || query || eventType !== "all" || activitySource !== "all"
+  const emptyMessage = journalRange || query || eventType !== "all" || activitySource !== "all"
     ? "За вибраними фільтрами подій немає."
     : "Події з’являться після першої дії відвідувача.";
 
@@ -337,30 +369,6 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
           </a>
         </header>
 
-        <section className="adminActivityPanel adminPeriodPanel" aria-label="Період статистики">
-          <div className="adminFilters">
-            {(["week", "month"] as const).map((mode) => (
-              <button key={mode} type="button" aria-pressed={period === mode} disabled={!range}
-                onClick={() => range && changeRange(calendarRange(range.from, mode), mode)}>
-                {mode === "week" ? "Тиждень" : "Місяць"}
-              </button>
-            ))}
-          </div>
-          {range && <div className="adminPeriodNav">
-            <button type="button" disabled={period === "custom"} aria-label="Попередній період"
-              onClick={() => period !== "custom" && changeRange(calendarRange(range.from, period, -1), period)}>←</button>
-            <strong>{period === "month" ? calendarLabel(range.from, { month: "long", year: "numeric" }) : `${calendarLabel(range.from)} — ${calendarLabel(range.to)}`}</strong>
-            <button type="button" disabled={period === "custom"} aria-label="Наступний період"
-              onClick={() => period !== "custom" && changeRange(calendarRange(range.from, period, 1), period)}>→</button>
-          </div>}
-          <form className="adminDateFilters" onSubmit={applyDates} noValidate>
-            <label>Від<input type="date" value={fromInput} max={toInput || undefined} onChange={(event) => setFromInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
-            <label>До<input type="date" value={toInput} min={fromInput || undefined} onChange={(event) => setToInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
-            <button type="submit">Застосувати дати</button>
-          </form>
-          {dateError && <p id="admin-date-error" role="alert">{dateError}</p>}
-          <p className="adminPeriodHint">Дати включно · {data?.timeZone ?? timeZone} · Фільтри застосовуються до графіка, зведення та журналу.</p>
-        </section>
 
         {data && status === "ready" ? (
           <section className="adminSummary" aria-label="Зведена статистика">
@@ -371,15 +379,31 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
           </section>
         ) : null}
 
-        <section className="adminActivityPanel adminDailyPanel" aria-label="Події за днями" aria-busy={status === "loading"}>
-          <h2>Події за днями</h2>
-          {status === "loading" ? <div className="adminState" role="status">Завантаження…</div> : status === "error" ?
-            <div className="adminState" role="alert">Не вдалося завантажити дані. <button type="button" onClick={() => setReloadKey((value) => value + 1)}>Повторити</button></div> : data ? <>
-            <p>{data.summary.total === 0 ? "За вибраний період подій немає." : `Усього за період: ${data.summary.total}`}</p>
+        <section className="adminActivityPanel adminDailyPanel" aria-label="Події за днями" aria-busy={chartStatus === "loading"}>
+          <div className="adminChartHeader"><h2>Події за днями</h2>
+          <div className="adminFilters">
+            {(["week", "month"] as const).map((mode) => (
+              <button key={mode} type="button" aria-pressed={period === mode} disabled={!range}
+                onClick={() => range && changeRange(calendarRange(range.from, mode), mode)}>
+                {mode === "week" ? "Тиждень" : "Місяць"}
+              </button>
+            ))}
+          </div>
+          {range && <div className="adminPeriodNav">
+            <button type="button" aria-label="Попередній період"
+              onClick={() => changeRange(calendarRange(range.from, period, -1), period)}>←</button>
+            <strong>{period === "month" ? calendarLabel(range.from, { month: "long", year: "numeric" }) : `${calendarLabel(range.from, { day: "numeric", month: "short" })} — ${calendarLabel(range.to)}`}</strong>
+            <button type="button" aria-label="Наступний період"
+              onClick={() => changeRange(calendarRange(range.from, period, 1), period)}>→</button>
+          </div>}
+</div>
+          {chartStatus === "loading" ? <div className="adminState" role="status">Завантаження…</div> : chartStatus === "error" ?
+            <div className="adminState" role="alert">Не вдалося завантажити дані. <button type="button" onClick={() => setChartReloadKey((value) => value + 1)}>Повторити</button></div> : chartData ? <>
+            <p>{chartData.days.reduce((total, day) => total + day.count, 0) === 0 ? "За вибраний період подій немає." : `Усього за період: ${chartData.days.reduce((total, day) => total + day.count, 0)}`}</p>
             <div className="adminDailyScroll" tabIndex={0} aria-label="Графік за днями, прокрутіть для перегляду всіх дат">
-              <div className="adminDailyChart" style={{ gridTemplateColumns: `repeat(${data.days.length}, minmax(34px, 1fr))` }}>
-                {data.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} подій`}>
-                  <div className="adminDailyTrack"><span style={{ height: `${day.count / Math.max(1, ...data.days.map((item) => item.count)) * 100}%` }} /></div>
+              <div className="adminDailyChart" style={{ gridTemplateColumns: `repeat(${chartData.days.length}, minmax(34px, 1fr))` }}>
+                {chartData.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} подій`}>
+                  <div className="adminDailyTrack"><span style={{ height: `${day.count / Math.max(1, ...chartData.days.map((item) => item.count)) * 100}%` }} /></div>
                   <strong>{day.count}</strong>
                   <span>{calendarLabel(day.date, { day: "2-digit", month: "2-digit" })}</span>
                   <span>{calendarLabel(day.date, { weekday: "short" })}</span>
@@ -409,6 +433,15 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
               />
               <button type="submit">Знайти</button>
             </form>
+          </div>
+
+          <div className="adminJournalDates">
+          <form className="adminDateFilters" onSubmit={applyDates} noValidate>
+            <label>Від<input type="date" value={fromInput} max={toInput || undefined} onChange={(event) => setFromInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <label>До<input type="date" value={toInput} min={fromInput || undefined} onChange={(event) => setToInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <button type="submit">Застосувати дати</button>
+          </form>
+          {dateError && <p id="admin-date-error" role="alert">{dateError}</p>}
           </div>
 
           <div className="adminFilters" aria-label="Фільтр типу події">
