@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 type ActivityEvent = {
-  type: "visit" | "click";
+  type: "visit" | "click" | "section_view";
   path: string;
   label?: string;
   referrer?: string;
   visitorId: string;
-  target?: "open_bot";
+  target?: "open_bot" | "daily_progress";
 };
 
 const BOT_OPEN_SELECTOR = "[data-track-bot-open]";
@@ -97,9 +97,11 @@ export default function TelegramActivityTracker() {
   const pathname = usePathname();
   const visitorIdRef = useRef<string>("");
   const lastVisitedPathRef = useRef("");
+  const progressTrackedRef = useRef(false);
 
   useEffect(() => {
     if (pathname !== "/") {
+      progressTrackedRef.current = false;
       return;
     }
 
@@ -137,10 +139,43 @@ export default function TelegramActivityTracker() {
       });
     }
 
+    let scrollFrame = 0;
+
+    function checkProgressReached() {
+      scrollFrame = 0;
+      if (progressTrackedRef.current || window.scrollY <= 0) {
+        return;
+      }
+
+      const heading = document.getElementById("landing-progress-title");
+      if (!heading || heading.getBoundingClientRect().bottom > window.innerHeight) {
+        return;
+      }
+
+      progressTrackedRef.current = true;
+      sendActivity({
+        type: "section_view",
+        path: getCurrentPath(),
+        label: "Бачте свій день цілком",
+        visitorId: visitorIdRef.current,
+        target: "daily_progress"
+      });
+    }
+
+    function handleScroll() {
+      if (!scrollFrame && !progressTrackedRef.current) {
+        scrollFrame = window.requestAnimationFrame(checkProgressReached);
+      }
+    }
+
     document.addEventListener("click", handleClick, true);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
 
     return () => {
       document.removeEventListener("click", handleClick, true);
+      window.removeEventListener("scroll", handleScroll);
+      window.cancelAnimationFrame(scrollFrame);
     };
   }, [pathname]);
 

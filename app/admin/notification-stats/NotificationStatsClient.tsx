@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-type EventType = "visit" | "click" | "bottom" | "bot_started" | "quiz_completed";
+type EventType = "visit" | "click" | "bottom" | "section_view" | "bot_started" | "quiz_completed";
 type DeliveryStatus = "pending" | "sent" | "failed";
 type ActivitySource = "browser" | "telegram_webapp" | "telegram_bot";
 
@@ -47,6 +47,7 @@ const eventLabels: Record<EventType, string> = {
   visit: "Відвідування",
   click: "Натискання",
   bottom: "До кінця",
+  section_view: "До блоку «Бачте свій день цілком»",
   bot_started: "Запуск бота",
   quiz_completed: "Квіз пройдено"
 };
@@ -300,7 +301,7 @@ export default function NotificationStatsClient() {
           </div>
 
           <div className="adminFilters" aria-label="Фільтр типу події">
-            {(["all", "visit", "click", "bottom", "bot_started", "quiz_completed"] as const).map((value) => (
+            {(["all", "visit", "click", "bottom", "section_view", "bot_started", "quiz_completed"] as const).map((value) => (
               <button
                 aria-pressed={eventType === value}
                 key={value}

@@ -27,7 +27,8 @@ type ActivityEvent = {
 
 const eventTitles = {
   visit: "👋 New visit",
-  click: "🤖 Telegram bot button clicked"
+  click: "🤖 Telegram bot button clicked",
+  section_view: "📜 Доскролили до «Бачте свій день цілком»"
 } as const;
 
 const requestLog = new Map<string, number[]>();
@@ -147,12 +148,16 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => undefined)) as ActivityEvent | undefined;
   const type = body?.type;
-  if (type !== "visit" && type !== "click") {
+  if (type !== "visit" && type !== "click" && type !== "section_view") {
     return NextResponse.json({ error: "Unknown event type" }, { status: 400 });
   }
 
   if (type === "click" && body?.target !== "open_bot") {
     return NextResponse.json({ error: "Unknown click target" }, { status: 400 });
+  }
+
+  if (type === "section_view" && body?.target !== "daily_progress") {
+    return NextResponse.json({ error: "Unknown section target" }, { status: 400 });
   }
 
   const path = cleanText(body?.path, 300);
@@ -163,7 +168,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "path and visitorId are required" }, { status: 400 });
   }
 
-  if (type === "visit" && path !== "/" && !path.startsWith("/?")) {
+  if ((type === "visit" || type === "section_view") && path !== "/" && !path.startsWith("/?")) {
     return NextResponse.json({ error: "Only homepage visits are tracked" }, { status: 400 });
   }
 

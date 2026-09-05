@@ -14,6 +14,7 @@ const EVENT_TYPES: AdminEventType[] = [
   "visit",
   "click",
   "bottom",
+  "section_view",
   "bot_started",
   "quiz_completed"
 ];

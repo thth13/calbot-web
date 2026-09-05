@@ -340,64 +340,125 @@ function waitForTelegramWebApp(timeoutMs = 1500) {
   });
 }
 
+function LandingAction({ placement }: { placement: "hero" | "footer" }) {
+  return (
+    <div className="landingCta">
+      <a
+        className="primaryAction landingAction"
+        data-track-bot-open="true"
+        data-track-label={`Open Telegram bot — ${placement}`}
+        href={BOT_URL}
+        target="_blank"
+        rel="noreferrer"
+      >
+        Спробувати безкоштовно
+      </a>
+    </div>
+  );
+}
+
 function Landing() {
   return (
-    <main className="landingPage">
+    <main className="landingPage" id="top">
       <header className="landingNav">
         <a className="brand" href="#top" aria-label="CalBot — на початок сторінки">
           <span className="brandMark">C</span>
           <span>CalBot</span>
         </a>
-        <span className="landingTag">AI-трекер харчування</span>
+        <span className="landingTag">Щоденник харчування у Telegram</span>
       </header>
 
-      <section className="landingHero" id="top">
+      <section className="landingHero" aria-labelledby="landing-title">
         <div className="landingCopy">
-          {/* <p className="eyebrow">Telegram-бот з AI</p> */}
-          <h1>Харчування під контролем — без зайвих підрахунків</h1>
+          <p className="landingEyebrow">Ваш обід. Одне фото. Калорії та БЖВ.</p>
+          <h1 id="landing-title">Рахуйте калорії за фото, <span>а не вручну</span></h1>
           <p className="landingLead">
-            Надішліть фото страви й одразу отримайте калорії, БЖВ та зрозумілу
-            статистику прогресу.
+            Надішліть фото страви в Telegram — CalBot оцінить калорії та БЖВ
+            і збереже прийом їжі у щоденнику.
           </p>
-          <a
-            className="primaryAction landingAction"
-            data-track-bot-open="true"
-            data-track-label="Open Telegram bot"
-            href={BOT_URL}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Спробувати в Telegram
-          </a>
+          <LandingAction placement="hero" />
         </div>
-
-        <div className="landingScreens" aria-label="Інтерфейс CalBot">
-          <figure className="landingPhone landingPhoneLeft">
-            <img
-              src="/phone-profile.webp"
-              alt="Денна статистика калорій і макронутрієнтів у CalBot"
-              width="852"
-              height="1847"
-            />
-          </figure>
-          <figure className="landingPhone landingPhoneCenter">
+        <figure className="landingExample">
+          <div className="landingExamplePhone">
             <img
               src="/phone-main.webp"
-              alt="Аналіз страви за фото в Telegram-боті CalBot"
+              alt="Приклад відповіді CalBot на фото обіду: приблизно 500 ккал, 25 г білків, 20 г жирів та 50 г вуглеводів. Результат можна редагувати."
               width="853"
               height="1844"
+              fetchPriority="high"
             />
+          </div>
+          <figcaption>Реальний приклад аналізу страви в CalBot</figcaption>
+        </figure>
+      </section>
+
+      <section className="landingSection" aria-labelledby="landing-steps-title">
+        <p className="landingEyebrow">Як почати</p>
+        <h2 id="landing-steps-title">Від фото до запису у щоденнику</h2>
+        <ol className="landingSteps">
+          <li><h3>Відкрийте CalBot</h3><p>Натисніть «Старт» у Telegram і пройдіть початкове налаштування.</p></li>
+          <li><h3>Надішліть фото страви</h3><p>Сфотографуйте свій сніданок, обід чи вечерю й надішліть фото боту.</p></li>
+          <li><h3>Отримайте оцінку калорій</h3><p>CalBot покаже калорії та БЖВ і додасть страву до вашого щоденника.</p></li>
+        </ol>
+      </section>
+
+      <section className="landingSection landingProgress" aria-labelledby="landing-progress-title">
+        <div className="landingSectionCopy">
+          <p className="landingEyebrow">Не лише один прийом їжі</p>
+          <h2 id="landing-progress-title">Бачте свій день цілком</h2>
+          <p>Скільки вже зʼїли, скільки залишилося до денної цілі та як змінюється харчування протягом тижня — в одному місці.</p>
+          <p>Повертайтеся до історії страв і стежте за калоріями, білками, жирами та вуглеводами.</p>
+        </div>
+        <div className="landingProgressExamples">
+          <figure>
+            <img src="/phone-profile.webp" alt="Денний підсумок CalBot: калорії, БЖВ і залишок до цілі" width="852" height="1847" loading="lazy" />
+            <figcaption>Ваш день</figcaption>
           </figure>
-          <figure className="landingPhone landingPhoneRight">
-            <img
-              src="/phone-stats.webp"
-              alt="Тижнева статистика харчування в CalBot"
-              width="852"
-              height="1846"
-            />
+          <figure>
+            <img src="/phone-stats.webp" alt="Графік калорій та БЖВ за тиждень у CalBot" width="852" height="1846" loading="lazy" />
+            <figcaption>Ваш тиждень</figcaption>
           </figure>
         </div>
       </section>
+
+      <section className="landingSection landingFaq" aria-labelledby="landing-faq-title">
+        <div>
+          <p className="landingEyebrow">Перед першою стравою</p>
+          <h2 id="landing-faq-title">Коротко про головне</h2>
+        </div>
+        <div className="landingQuestions">
+          <details open>
+            <summary>Наскільки точний аналіз за фото?</summary>
+            <p>CalBot дає приблизну оцінку. За фото не завжди можна визначити точну вагу порції, кількість олії чи всі інгредієнти. Перевіряйте результат і за потреби редагуйте запис.</p>
+          </details>
+          <details>
+            <summary>Чи можна виправити результат?</summary>
+            <p>Так. У відповіді бота є кнопка «Редагувати», щоб ви могли скоригувати запис про страву.</p>
+          </details>
+          <details>
+            <summary>Що буде після 14 безкоштовних днів?</summary>
+            <p>Перші 14 днів — безкоштовний пробний період. Для подальшого сканування страв потрібен Premium. Актуальні тарифи доступні на <a href="/premium">сторінці Premium</a>.</p>
+          </details>
+          <details>
+            <summary>Потрібно встановлювати окремий застосунок?</summary>
+            <p>Якщо у вас уже є Telegram, нічого додатково встановлювати не потрібно. Відкрийте CalBot, натисніть «Старт» і дотримуйтеся підказок бота.</p>
+          </details>
+        </div>
+      </section>
+
+      <section className="landingClosing" aria-labelledby="landing-closing-title">
+        <p className="landingEyebrow">Почніть зі свого наступного обіду</p>
+        <h2 id="landing-closing-title">Спробуйте на своїй страві</h2>
+        <p>Подивіться, як виглядає ваш прийом їжі в калоріях та БЖВ.</p>
+        <LandingAction placement="footer" />
+      </section>
+      <footer className="landingFooter">
+        <a className="brand" href="#top">CalBot</a>
+        <nav aria-label="Інформація про сервіс">
+          <a href="/terms">Умови користування</a>
+          <a href="/privacy">Конфіденційність</a>
+        </nav>
+      </footer>
     </main>
   );
 }
@@ -681,7 +742,7 @@ function Dashboard({
 }
 
 export default function Home() {
-  const [view, setView] = useState<"checking" | "landing" | "dashboard">("checking");
+  const [view, setView] = useState<"checking" | "landing" | "dashboard">("landing");
   const [dashboardData, setDashboardData] = useState<DashboardData | undefined>();
   const [initData, setInitData] = useState("");
   const [selectedDate, setSelectedDate] = useState(getLocalDateKey);
@@ -717,6 +778,11 @@ export default function Home() {
         return;
       }
 
+      if (!isActive) {
+        return;
+      }
+
+      setView("checking");
       webApp.ready?.();
       webApp.expand?.();
       setInitData(webApp.initData);
@@ -767,7 +833,7 @@ export default function Home() {
   }
 
   if (view === "checking") {
-    return <main className="routeLoader" aria-label="Завантаження" />;
+    return <main className="routeLoader landingDashboardLoader" role="status">Завантажуємо ваш день…</main>;
   }
 
   if (view === "dashboard" && dashboardData) {
