@@ -1,5 +1,7 @@
 import type { Document } from "mongodb";
 
+export const ADMIN_TIME_ZONE = "Europe/Kyiv";
+
 export const ADMIN_ACTIVITY_COLLECTION =
   process.env.MONGODB_ADMIN_ACTIVITY_COLLECTION ?? "admin_notification_activity";
 export const BOT_EVENTS_COLLECTION =

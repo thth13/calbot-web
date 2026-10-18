@@ -68,7 +68,8 @@ function formatDate(value: string, timeZone: string) {
   return new Intl.DateTimeFormat("en-US", {
     timeZone,
     dateStyle: "short",
-    timeStyle: "medium"
+    timeStyle: "medium",
+    hourCycle: "h23"
   }).format(new Date(value));
 }
 
@@ -81,7 +82,7 @@ function getVisitorLabel(item: ActivityEvent) {
   const username = item.username ? `@${item.username}` : "";
   return (
     [name, username].filter(Boolean).join(" · ") ||
-    String(item.telegramUserId ?? (item.visitorId || "—"))
+    (item.source === "diary" ? "Unknown user" : String(item.telegramUserId ?? (item.visitorId || "—")))
   );
 }
 

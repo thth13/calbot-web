@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ADMIN_TIME_ZONE } from "../../lib/admin-notifications";
 import NotificationStatsClient from "./NotificationStatsClient";
 
 export const metadata: Metadata = {
@@ -11,5 +12,5 @@ export const metadata: Metadata = {
 };
 
 export default function NotificationStatsPage() {
-  return <NotificationStatsClient timeZone={process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv"} />;
+  return <NotificationStatsClient timeZone={ADMIN_TIME_ZONE} />;
 }

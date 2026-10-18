@@ -2,6 +2,7 @@ import { ObjectId, type Document } from "mongodb";
 import { NextResponse } from "next/server";
 import {
   ADMIN_ACTIVITY_COLLECTION,
+  ADMIN_TIME_ZONE,
   BOT_EVENTS_COLLECTION,
   type AdminEventType
 } from "../../../lib/admin-notifications";
@@ -19,8 +20,9 @@ const EVENT_TYPES: AdminEventType[] = [
   "quiz_completed",
   "meal_added"
 ];
-const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
+const TIME_ZONE = ADMIN_TIME_ZONE;
 const FOOD_ENTRIES_COLLECTION = process.env.MONGODB_FOOD_ENTRIES_COLLECTION ?? "foodentries";
+const USERS_COLLECTION = process.env.MONGODB_USERS_COLLECTION ?? "users";
 
 type StatsRequest = {
   view?: unknown;
@@ -242,6 +244,56 @@ export async function POST(request: Request) {
           coll: FOOD_ENTRIES_COLLECTION,
           pipeline: [
             {
+              $lookup: {
+                from: USERS_COLLECTION,
+                let: {
+                  ownerId: { $ifNull: ["$userId", "$user_id", "$ownerId", "$owner_id", null] },
+                  telegramId: { $ifNull: ["$telegramId", "$telegramUserId", "$telegram_id", "$telegram.id", null] }
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $or: [
+                          {
+                            $and: [
+                              { $ne: ["$$ownerId", null] },
+                              { $in: ["$_id", [
+                                "$$ownerId",
+                                { $convert: { input: "$$ownerId", to: "objectId", onError: null, onNull: null } },
+                                { $convert: { input: "$$ownerId", to: "string", onError: null, onNull: null } }
+                              ]] }
+                            ]
+                          },
+                          {
+                            $and: [
+                              { $ne: ["$$telegramId", null] },
+                              { $or: ["$telegramId", "$telegramUserId", "$telegram_id", "$telegram.id", "$telegram.user.id"].map((field) => ({
+                                $in: [
+                                  field,
+                                  [
+                                    { $convert: { input: "$$telegramId", to: "string", onError: "", onNull: "" } },
+                                    { $convert: { input: "$$telegramId", to: "long", onError: -1, onNull: -1 } }
+                                  ]
+                                ]
+                              })) }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  { $limit: 1 },
+                  { $project: {
+                    username: { $ifNull: ["$username", "$telegram.username", "$telegram.user.username"] },
+                    firstName: { $ifNull: ["$firstName", "$first_name", "$telegram.first_name", "$telegram.user.first_name"] },
+                    lastName: { $ifNull: ["$lastName", "$last_name", "$telegram.last_name", "$telegram.user.last_name"] }
+                  } }
+                ],
+                as: "diaryUser"
+              }
+            },
+            {
               $project: {
                 type: { $literal: "meal_added" },
                 path: { $literal: "Food diary" },
@@ -261,9 +313,9 @@ export async function POST(request: Request) {
                     to: "long", onError: null, onNull: null
                   }
                 },
-                username: 1,
-                firstName: 1,
-                lastName: 1,
+                username: { $ifNull: [{ $arrayElemAt: ["$diaryUser.username", 0] }, "$username"] },
+                firstName: { $ifNull: [{ $arrayElemAt: ["$diaryUser.firstName", 0] }, "$firstName"] },
+                lastName: { $ifNull: [{ $arrayElemAt: ["$diaryUser.lastName", 0] }, "$lastName"] },
                 ip: { $literal: "—" },
                 createdAt: { $convert: { input: "$createdAt", to: "date", onError: null, onNull: null } },
                 activitySource: { $literal: "food_diary" },
