@@ -8,7 +8,7 @@ export const BOT_EVENTS_COLLECTION =
 export type AdminActivityType = "visit" | "click" | "bottom" | "section_view";
 export type AdminActivitySource = "browser" | "telegram_webapp";
 export type BotActivityType = "bot_started" | "quiz_completed";
-export type AdminEventType = AdminActivityType | BotActivityType;
+export type AdminEventType = AdminActivityType | BotActivityType | "meal_added";
 
 export type AdminActivityDocument = Document & {
   type: AdminActivityType;

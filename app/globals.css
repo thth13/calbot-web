@@ -503,7 +503,8 @@
   color: #5b3ba8;
 }
 
-.eventBadge.quiz_completed {
+.eventBadge.quiz_completed,
+.eventBadge.meal_added {
   background: #e5f7f4;
   color: #176c61;
 }

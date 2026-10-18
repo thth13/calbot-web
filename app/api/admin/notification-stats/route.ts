@@ -16,7 +16,8 @@ const EVENT_TYPES: AdminEventType[] = [
   "bottom",
   "section_view",
   "bot_started",
-  "quiz_completed"
+  "quiz_completed",
+  "meal_added"
 ];
 const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
 const FOOD_ENTRIES_COLLECTION = process.env.MONGODB_FOOD_ENTRIES_COLLECTION ?? "foodentries";
@@ -98,7 +99,8 @@ export async function POST(request: Request) {
   const activitySource =
     body?.activitySource === "browser" ||
     body?.activitySource === "telegram_webapp" ||
-    body?.activitySource === "telegram_bot"
+    body?.activitySource === "telegram_bot" ||
+    body?.activitySource === "food_diary"
       ? body.activitySource
       : undefined;
   const todayKey = new Intl.DateTimeFormat("en-CA", {
@@ -230,6 +232,42 @@ export async function POST(request: Request) {
                 metadata: 1,
                 activitySource: { $literal: "telegram_bot" },
                 source: { $literal: "bot" }
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unionWith: {
+          coll: FOOD_ENTRIES_COLLECTION,
+          pipeline: [
+            {
+              $project: {
+                type: { $literal: "meal_added" },
+                path: { $literal: "Food diary" },
+                label: { $cond: [{ $eq: ["$mealType", "snack"] }, "Snack added", "Meal added"] },
+                visitorId: {
+                  $convert: {
+                    input: { $ifNull: [
+                      "$telegramId", "$telegramUserId", "$telegram_id", "$telegram.id",
+                      "$userId", "$user_id", "$ownerId", "$owner_id"
+                    ] },
+                    to: "string", onError: "", onNull: ""
+                  }
+                },
+                telegramUserId: {
+                  $convert: {
+                    input: { $ifNull: ["$telegramId", "$telegramUserId", "$telegram_id", "$telegram.id"] },
+                    to: "long", onError: null, onNull: null
+                  }
+                },
+                username: 1,
+                firstName: 1,
+                lastName: 1,
+                ip: { $literal: "—" },
+                createdAt: { $convert: { input: "$createdAt", to: "date", onError: null, onNull: null } },
+                activitySource: { $literal: "food_diary" },
+                source: { $literal: "diary" }
               }
             }
           ]

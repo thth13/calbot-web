@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import type { AdminEventType } from "../../lib/admin-notifications";
 import DailyStatsPanel from "./DailyStatsPanel";
 import { calendarRange } from "./calendar";
 
-type EventType = "visit" | "click" | "bottom" | "section_view" | "bot_started" | "quiz_completed";
+type EventType = AdminEventType;
 type DeliveryStatus = "pending" | "sent" | "failed";
-type ActivitySource = "browser" | "telegram_webapp" | "telegram_bot";
+type ActivitySource = "browser" | "telegram_webapp" | "telegram_bot" | "food_diary";
 
 type ActivityEvent = {
   id: string;
-  source: "web" | "bot";
+  source: "web" | "bot" | "diary";
   type: EventType;
   path: string;
   label?: string;
@@ -53,7 +54,8 @@ const eventLabels: Record<EventType, string> = {
   bottom: "Reached bottom",
   section_view: "Reached “See your whole day”",
   bot_started: "Bot started",
-  quiz_completed: "Quiz completed"
+  quiz_completed: "Quiz completed",
+  meal_added: "Meals added"
 };
 
 const statusLabels: Record<DeliveryStatus, string> = {
@@ -79,13 +81,14 @@ function getVisitorLabel(item: ActivityEvent) {
   const username = item.username ? `@${item.username}` : "";
   return (
     [name, username].filter(Boolean).join(" · ") ||
-    String(item.telegramUserId ?? item.visitorId)
+    String(item.telegramUserId ?? (item.visitorId || "—"))
   );
 }
 
 function getSourceLabel(source: ActivityEvent["activitySource"]) {
   if (source === "telegram_webapp") return "Telegram WebApp";
   if (source === "telegram_bot") return "Telegram bot";
+  if (source === "food_diary") return "Food diary";
   return "Browser";
 }
 
@@ -200,6 +203,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   }
 
   function toggleItem(item: ActivityEvent) {
+    if (item.source === "diary") return;
     const key = getEventKey(item);
     setSelectedItems((current) => {
       const next = { ...current };
@@ -215,10 +219,11 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   function toggleCurrentPage() {
     if (!data) return;
 
-    const allSelected = data.events.every((item) => selectedItems[getEventKey(item)]);
+    const selectableEvents = data.events.filter((item) => item.source !== "diary");
+    const allSelected = selectableEvents.every((item) => selectedItems[getEventKey(item)]);
     setSelectedItems((current) => {
       const next = { ...current };
-      data.events.forEach((item) => {
+      selectableEvents.forEach((item) => {
         const key = getEventKey(item);
         if (allSelected) {
           delete next[key];
@@ -267,6 +272,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   }
 
   async function deleteEvent(item: ActivityEvent) {
+    if (item.source === "diary") return;
     if (!window.confirm(`Delete event “${eventLabels[item.type]}”?`)) return;
 
     setDeletingId(item.id);
@@ -333,7 +339,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
               <h2>Activity log</h2>
               {data && status === "ready" ? (
                 <p>
-                  Visits: {data.summary.byType.visit ?? 0} · Clicks: {data.summary.byType.click ?? 0} · Reached bottom: {data.summary.byType.bottom ?? 0} · Bot starts: {data.summary.byType.bot_started ?? 0} · Quizzes: {data.summary.byType.quiz_completed ?? 0}
+                  Visits: {data.summary.byType.visit ?? 0} · Clicks: {data.summary.byType.click ?? 0} · Reached bottom: {data.summary.byType.bottom ?? 0} · Bot starts: {data.summary.byType.bot_started ?? 0} · Quizzes: {data.summary.byType.quiz_completed ?? 0} · Meals added: {data.summary.byType.meal_added ?? 0}
                 </p>
               ) : null}
             </div>
@@ -359,7 +365,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
           </div>
 
           <div className="adminFilters" aria-label="Event type filter">
-            {(["all", "visit", "click", "bottom", "section_view", "bot_started", "quiz_completed"] as const).map((value) => (
+            {(["all", "visit", "click", "bottom", "section_view", "bot_started", "quiz_completed", "meal_added"] as const).map((value) => (
               <button
                 aria-pressed={eventType === value}
                 key={value}
@@ -371,7 +377,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
             ))}
           </div>
           <div className="adminFilters" aria-label="Source filter">
-            {(["all", "browser", "telegram_webapp", "telegram_bot"] as const).map((value) => (
+            {(["all", "browser", "telegram_webapp", "telegram_bot", "food_diary"] as const).map((value) => (
               <button
                 aria-pressed={activitySource === value}
                 key={value}
@@ -414,8 +420,8 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                       <th className="adminSelectCell">
                         <input
                           aria-label="Select all events on this page"
-                          checked={data.events.length > 0 && data.events.every((item) => selectedItems[getEventKey(item)])}
-                          disabled={deletingSelected || status === "loading"}
+                          checked={data.events.some((item) => item.source !== "diary") && data.events.filter((item) => item.source !== "diary").every((item) => selectedItems[getEventKey(item)])}
+                          disabled={deletingSelected || status === "loading" || !data.events.some((item) => item.source !== "diary")}
                           onChange={toggleCurrentPage}
                           type="checkbox"
                         />
@@ -438,9 +444,9 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                       >
                         <td className="adminSelectCell">
                           <input
-                            aria-label={`Select event “${eventLabels[item.type]}”`}
+                            aria-label={item.source === "diary" ? "Diary entries cannot be deleted from the activity log" : `Select event “${eventLabels[item.type]}”`}
                             checked={Boolean(selectedItems[getEventKey(item)])}
-                            disabled={deletingSelected}
+                            disabled={deletingSelected || item.source === "diary"}
                             onChange={() => toggleItem(item)}
                             type="checkbox"
                           />
@@ -452,7 +458,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                           <strong>{item.path}</strong>
                           {item.label ? <span>{item.label}</span> : item.referrer ? <span>from {item.referrer}</span> : null}
                         </td>
-                        <td title={String(item.telegramUserId ?? item.visitorId)}>{getVisitorLabel(item)}</td>
+                        <td title={String(item.telegramUserId ?? (item.visitorId || "—"))}>{getVisitorLabel(item)}</td>
                         <td>{item.ip}</td>
                         <td>
                           {item.deliveryStatus ? (
@@ -462,14 +468,14 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                           ) : "—"}
                         </td>
                         <td>
-                          <button
+                          {item.source === "diary" ? <span title="Diary entries cannot be deleted from the activity log">Read only</span> : <button
                             className="adminDeleteButton"
                             disabled={deletingSelected || deletingId === item.id}
                             onClick={() => void deleteEvent(item)}
                             type="button"
                           >
                             {deletingId === item.id ? "Deleting…" : "Delete"}
-                          </button>
+                          </button>}
                         </td>
                       </tr>
                     ))}
