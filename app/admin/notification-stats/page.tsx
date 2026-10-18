@@ -3,7 +3,7 @@ import NotificationStatsClient from "./NotificationStatsClient";
 
 export const metadata: Metadata = {
   title: "Notification statistics — CalBot",
-  description: "Activity log and notifications sent by the CalBot bot.",
+  description: "CalBot activity log, notifications and meal entry statistics.",
   robots: {
     index: false,
     follow: false

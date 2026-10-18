@@ -3437,6 +3437,11 @@ footer nav a:hover {
 .adminDateFilters input { min-height: 38px; min-width: 0; max-width: 100%; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--paper); color: var(--text); font: inherit; }
 .adminPeriodHint, .adminDailyPanel > p { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
 .adminDailyPanel { min-height: 350px; }
+.adminMealSummary { margin-top: 16px; font-variant-numeric: tabular-nums; }
+.adminMealPanel { min-height: 510px; }
+@media (max-width: 720px) {
+  .adminMealPanel { min-height: 660px; }
+}
 .adminDailyPanel h2 { font-size: 22px; }
 .adminDailyScroll { overflow-x: auto; padding: 12px 0; scrollbar-color: var(--line-strong) var(--paper); }
 .adminDailyChart { display: grid; gap: 8px; min-width: 100%; }

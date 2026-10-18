@@ -19,6 +19,7 @@ const EVENT_TYPES: AdminEventType[] = [
   "quiz_completed"
 ];
 const TIME_ZONE = process.env.DASHBOARD_TIME_ZONE ?? "Europe/Kyiv";
+const FOOD_ENTRIES_COLLECTION = process.env.MONGODB_FOOD_ENTRIES_COLLECTION ?? "foodentries";
 
 type StatsRequest = {
   view?: unknown;
@@ -139,6 +140,36 @@ export async function POST(request: Request) {
 
   try {
     const db = await getMongoDb();
+    if (body?.view === "meals") {
+      const counts = await db.collection(FOOD_ENTRIES_COLLECTION).aggregate<{
+        _id: string;
+        count: number;
+        snacks: number;
+      }>([
+        { $project: {
+          createdAt: { $convert: { input: "$createdAt", to: "date", onError: null, onNull: null } },
+          mealType: 1
+        } },
+        { $match: { createdAt: { $gte: dateStart(dateFrom), $lt: dateStart(nextDate(dateTo)) } } },
+        { $group: {
+          _id: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d", timezone: TIME_ZONE } },
+          count: { $sum: 1 },
+          snacks: { $sum: { $cond: [{ $eq: ["$mealType", "snack"] }, 1, 0] } }
+        } }
+      ]).toArray();
+      const byDate = new Map(counts.map((day) => [day._id, day.count]));
+      const days = [];
+      for (let date = dateFrom; date <= dateTo; date = nextDate(date)) {
+        days.push({ date, count: byDate.get(date) ?? 0 });
+      }
+      const total = counts.reduce((sum, day) => sum + day.count, 0);
+      const snacks = counts.reduce((sum, day) => sum + day.snacks, 0);
+      return NextResponse.json({
+        days,
+        timeZone: TIME_ZONE,
+        summary: { total, meals: total - snacks, snacks }
+      });
+    }
     const collection = db.collection(ADMIN_ACTIVITY_COLLECTION);
     const now = new Date();
     const today = dateStart(todayKey);

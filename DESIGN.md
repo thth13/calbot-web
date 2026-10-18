@@ -8,4 +8,6 @@ Notification statistics use native date inputs: calendar popup language and geom
 
 Reference workflows: `app/admin/notification-stats/NotificationStatsClient.tsx`, `app/stats/StatsClient.tsx`. Preserve existing product styling rather than introducing a new visual system for an admin feature.
 
+Daily event and meal charts share `app/admin/notification-stats/DailyStatsPanel.tsx` and calendar utilities in `calendar.ts`. Each chart owns its week/month period independently; meal parameters use `mealFrom` and `mealPeriod`. Meal statistics read saved diary entries by `createdAt` in the dashboard timezone, include snacks, and exclude deleted entries. Only `mealType: snack` is classified as a snack, matching the diary. The average includes every calendar day in the selected period, including days without entries. Journal filters do not affect meal statistics.
+
 The product language is English across public, legal, member and admin pages, including metadata, accessible labels, feedback, and server-generated display copy. Display dates and numbers use `en-US`; internal date keys retain `en-CA`, and domain timezones remain unchanged. Use kcal, g, kg and cm for units. User-provided content and existing screenshot assets retain their original language.

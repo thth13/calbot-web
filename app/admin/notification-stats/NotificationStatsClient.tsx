@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import DailyStatsPanel from "./DailyStatsPanel";
+import { calendarRange } from "./calendar";
 
 type EventType = "visit" | "click" | "bottom" | "section_view" | "bot_started" | "quiz_completed";
 type DeliveryStatus = "pending" | "sent" | "failed";
@@ -91,33 +93,8 @@ function getEventKey(item: Pick<ActivityEvent, "id" | "source">) {
   return `${item.source}:${item.id}`;
 }
 
-type Period = "week" | "month";
-
-function calendarRange(anchor: string, period: "week" | "month", offset = 0) {
-  const start = new Date(`${anchor}T00:00:00Z`);
-  if (period === "week") {
-    start.setUTCDate(start.getUTCDate() - (start.getUTCDay() + 6) % 7 + offset * 7);
-  } else {
-    start.setUTCDate(1);
-    start.setUTCMonth(start.getUTCMonth() + offset);
-  }
-  const end = new Date(start);
-  if (period === "week") end.setUTCDate(end.getUTCDate() + 6);
-  else { end.setUTCMonth(end.getUTCMonth() + 1); end.setUTCDate(0); }
-  return { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
-}
-
-function calendarLabel(value: string, options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) {
-  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
-}
-
 export default function NotificationStatsClient({ timeZone }: { timeZone: string }) {
-  const [period, setPeriod] = useState<Period>("week");
-  const [chartData, setChartData] = useState<Pick<StatsData, "days">>();
-  const [chartStatus, setChartStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [chartReloadKey, setChartReloadKey] = useState(0);
   const [journalRange, setJournalRange] = useState<{ from: string; to: string }>();
-  const [range, setRange] = useState<{ from: string; to: string }>();
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
   const [dateError, setDateError] = useState("");
@@ -134,10 +111,6 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
     else {
       setJournalRange(initial); setFromInput(initial.from); setToInput(initial.to);
     }
-    const chartFrom = params.get("chartFrom");
-    const chartPeriod = params.get("chartPeriod") === "month" ? "month" : "week";
-    setPeriod(chartPeriod);
-    setRange(calendarRange(valid(chartFrom) ? chartFrom : today, chartPeriod));
   }, [timeZone]);
   const [data, setData] = useState<StatsData>();
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -195,34 +168,6 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
       controller.abort();
     };
   }, [activitySource, eventType, page, query, reloadKey, journalRange]);
-
-  useEffect(() => {
-    if (!range) return;
-    const controller = new AbortController();
-    let active = true;
-    setChartStatus("loading");
-    async function loadChart() {
-      try {
-        const response = await fetch("/api/admin/notification-stats", {
-          method: "POST", signal: controller.signal,
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ view: "chart", dateFrom: range?.from, dateTo: range?.to })
-        });
-        if (!response.ok) throw new Error("Could not load chart");
-        const result = await response.json() as Pick<StatsData, "days">;
-        if (active) { setChartData(result); setChartStatus("ready"); }
-      } catch { if (active) setChartStatus("error"); }
-    }
-    void loadChart();
-    return () => { active = false; controller.abort(); };
-  }, [range, reloadKey, chartReloadKey]);
-
-  function changeRange(next: { from: string; to: string }, mode: Period) {
-    setPeriod(mode); setRange(next);
-    const url = new URL(window.location.href);
-    url.searchParams.set("chartFrom", next.from); url.searchParams.set("chartPeriod", mode);
-    window.history.replaceState(null, "", url);
-  }
 
   function applyDates(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -379,39 +324,8 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
           </section>
         ) : null}
 
-        <section className="adminActivityPanel adminDailyPanel" aria-label="Daily events" aria-busy={chartStatus === "loading"}>
-          <div className="adminChartHeader"><h2>Daily events</h2>
-          <div className="adminFilters">
-            {(["week", "month"] as const).map((mode) => (
-              <button key={mode} type="button" aria-pressed={period === mode} disabled={!range}
-                onClick={() => range && changeRange(calendarRange(range.from, mode), mode)}>
-                {mode === "week" ? "Week" : "Month"}
-              </button>
-            ))}
-          </div>
-          {range && <div className="adminPeriodNav">
-            <button type="button" aria-label="Previous period"
-              onClick={() => changeRange(calendarRange(range.from, period, -1), period)}>←</button>
-            <strong>{period === "month" ? calendarLabel(range.from, { month: "long", year: "numeric" }) : `${calendarLabel(range.from, { day: "numeric", month: "short" })} — ${calendarLabel(range.to)}`}</strong>
-            <button type="button" aria-label="Next period"
-              onClick={() => changeRange(calendarRange(range.from, period, 1), period)}>→</button>
-          </div>}
-</div>
-          {chartStatus === "loading" ? <div className="adminState" role="status">Loading…</div> : chartStatus === "error" ?
-            <div className="adminState" role="alert">Could not load data. <button type="button" onClick={() => setChartReloadKey((value) => value + 1)}>Retry</button></div> : chartData ? <>
-            <p>{chartData.days.reduce((total, day) => total + day.count, 0) === 0 ? "No events in the selected period." : `Total for period: ${chartData.days.reduce((total, day) => total + day.count, 0)}`}</p>
-            <div className="adminDailyScroll" tabIndex={0} aria-label="Daily chart, scroll to view all dates">
-              <div className="adminDailyChart" style={{ gridTemplateColumns: `repeat(${chartData.days.length}, minmax(34px, 1fr))` }}>
-                {chartData.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} events`}>
-                  <div className="adminDailyTrack"><span style={{ height: `${day.count / Math.max(1, ...chartData.days.map((item) => item.count)) * 100}%` }} /></div>
-                  <strong>{day.count}</strong>
-                  <span>{calendarLabel(day.date, { day: "2-digit", month: "2-digit" })}</span>
-                  <span>{calendarLabel(day.date, { weekday: "short" })}</span>
-                </div>)}
-              </div>
-            </div>
-          </> : null}
-        </section>
+        <DailyStatsPanel view="chart" timeZone={timeZone} reloadKey={reloadKey} />
+        <DailyStatsPanel view="meals" timeZone={timeZone} />
 
         <section className="adminActivityPanel" aria-live="polite">
           <div className="adminActivityHeader">
