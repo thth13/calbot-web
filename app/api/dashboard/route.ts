@@ -201,21 +201,21 @@ function getPreviousDateKey(dateKey: string) {
 
 function formatDateTitle(dateKey: string, todayKey: string) {
   if (dateKey === todayKey) {
-    return "Сьогодні";
+    return "Today";
   }
 
   if (dateKey === getPreviousDateKey(todayKey)) {
-    return "Учора";
+    return "Yesterday";
   }
 
-  return new Intl.DateTimeFormat("uk-UA", {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: TIME_ZONE,
     weekday: "long"
   }).format(new Date(`${dateKey}T12:00:00.000Z`));
 }
 
 function formatDateLabel(dateKey: string) {
-  return new Intl.DateTimeFormat("uk-UA", {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: TIME_ZONE,
     month: "long",
     day: "numeric"
@@ -356,13 +356,13 @@ function getMealNutrition(meal: FoodEntryDocument) {
 
 function getMealTitle(meal?: FoodEntryDocument) {
   if (!meal) {
-    return "Їжу ще не додано";
+    return "No meals added yet";
   }
 
   return readString(
     meal,
     ["foodDescription", "name", "title", "foodName", "description", "text", "meal", "items.0.name", "foods.0.name"],
-    "Страва без назви"
+    "Untitled meal"
   );
 }
 
@@ -376,7 +376,7 @@ function formatMealTime(meal?: FoodEntryDocument) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("uk-UA", {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit"

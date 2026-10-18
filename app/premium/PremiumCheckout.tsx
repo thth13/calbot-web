@@ -27,6 +27,7 @@ type PaddleGlobal = {
         theme?: "light" | "dark";
         variant?: "one-page" | "multi-page";
         successUrl?: string;
+        locale?: string;
       };
     };
   }) => void;
@@ -39,6 +40,7 @@ type PaddleGlobal = {
         theme?: "light" | "dark";
         variant?: "one-page" | "multi-page";
         successUrl?: string;
+        locale?: string;
       };
     }) => void;
   };
@@ -78,24 +80,24 @@ const paddleEnvironment =
 const plans = [
   {
     id: "monthly",
-    title: "Щомісяця",
+    title: "Monthly",
     price: "$4.99",
-    note: "Гнучкий доступ",
+    note: "Flexible access",
     priceId: process.env.NEXT_PUBLIC_PADDLE_MONTHLY_PRICE_ID
   },
   {
     id: "yearly",
-    title: "Щороку",
+    title: "Yearly",
     price: "$39.99",
-    note: "Найвигідніше",
+    note: "Best value",
     priceId: process.env.NEXT_PUBLIC_PADDLE_YEARLY_PRICE_ID
   }
 ] as const;
 
 const benefits = [
-  "Продовжуйте сканувати після безкоштовного 14-денного пробного періоду",
-  "Розширена статистика калорій і БЖВ",
-  "Необмежена історія харчування"
+  "Keep scanning after your free 14-day trial",
+  "Advanced calorie and macro statistics",
+  "Unlimited meal history"
 ];
 
 export default function PremiumCheckout() {
@@ -124,7 +126,7 @@ export default function PremiumCheckout() {
 
     setIsTelegramSession(hasInitData);
     if (!hasInitData) {
-      setCheckoutError("Відкрийте цю сторінку з Telegram-бота CalBot, щоб придбати Premium.");
+      setCheckoutError("Open this page from the CalBot Telegram bot to purchase Premium.");
       return;
     }
 
@@ -152,6 +154,7 @@ export default function PremiumCheckout() {
       checkout: {
         settings: {
           displayMode: "overlay",
+          locale: "en",
           theme: "light",
           variant: "one-page"
         }
@@ -164,7 +167,7 @@ export default function PremiumCheckout() {
   async function verifyTelegramUser() {
     const initData = window.Telegram?.WebApp?.initData;
     if (!initData) {
-      throw new Error("Щоб продовжити, відкрийте цю сторінку з Telegram.");
+      throw new Error("Open this page from Telegram to continue.");
     }
 
     const response = await fetch("/api/telegram/verify-init-data", {
@@ -176,7 +179,7 @@ export default function PremiumCheckout() {
     });
 
     if (!response.ok) {
-      throw new Error("Не вдалося перевірити сеанс Telegram. Відкрийте сторінку з бота ще раз.");
+      throw new Error("Could not verify your Telegram session. Reopen this page from the bot.");
     }
 
     return (await response.json()) as {
@@ -216,7 +219,7 @@ export default function PremiumCheckout() {
 
   async function openCheckout() {
     if (!window.Paddle || !selectedPlan.priceId) {
-      setCheckoutError("Платіжну форму ще не налаштовано. Спробуйте пізніше.");
+      setCheckoutError("Checkout is not configured yet. Please try again later.");
       return;
     }
 
@@ -229,7 +232,7 @@ export default function PremiumCheckout() {
       telegramUser = verified.user;
     } catch (error) {
       setCheckoutState("idle");
-      setCheckoutError(error instanceof Error ? error.message : "Не вдалося пройти перевірку Telegram.");
+      setCheckoutError(error instanceof Error ? error.message : "Telegram verification failed.");
       return;
     }
 
@@ -248,6 +251,7 @@ export default function PremiumCheckout() {
       },
       settings: {
         displayMode: "overlay",
+        locale: "en",
         theme: "light",
         variant: "one-page"
       }
@@ -282,8 +286,8 @@ export default function PremiumCheckout() {
           </ul>
         </div>
 
-        <div className="checkoutPanel" aria-label="Оформлення Premium">
-          <div className="planToggle" role="radiogroup" aria-label="Період підписки">
+        <div className="checkoutPanel" aria-label="Premium checkout">
+          <div className="planToggle" role="radiogroup" aria-label="Subscription period">
             {plans.map((plan) => (
               <label className="checkoutPlan" key={plan.id}>
                 <input
@@ -308,19 +312,19 @@ export default function PremiumCheckout() {
             onClick={openCheckout}
             type="button"
           >
-            {checkoutState === "opening" ? "Відкриваємо Paddle…" : "Оформити підписку"}
+            {checkoutState === "opening" ? "Opening Paddle…" : "Subscribe"}
           </button>
 
           {!isConfigured ? (
             <p className="checkoutNotice">
-              Додайте змінні середовища Paddle із клієнтським токеном та ID ціни, щоб
-              увімкнути платежі.
+              Add the Paddle environment variables with a client token and price ID to
+              enable payments.
             </p>
           ) : null}
 
           {checkoutState === "completed" ? (
             <p className="checkoutSuccess">
-              Оплату завершено. Premium активується після обробки вебхука Paddle.
+              Payment completed. Premium will activate once your payment is processed.
             </p>
           ) : null}
 

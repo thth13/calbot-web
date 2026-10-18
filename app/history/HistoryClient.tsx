@@ -108,11 +108,11 @@ function HistoryContent({
     <>
       <section className="diaryHero">
         <div>
-          <p className="eyebrow">Історія</p>
-          <h1 id="history-title">Харчування за днями</h1>
+          <p className="eyebrow">History</p>
+          <h1 id="history-title">Meals by day</h1>
         </div>
         <div className="diaryTotal">
-          <span>Сьогодні</span>
+          <span>Today</span>
           <strong>{data.todayTotal}</strong>
         </div>
       </section>
@@ -151,7 +151,7 @@ function HistoryContent({
                             }}
                           >
                             <label>
-                              <span>Страва</span>
+                              <span>Meal</span>
                               <input
                                 required
                                 value={editDraft.name}
@@ -159,7 +159,7 @@ function HistoryContent({
                               />
                             </label>
                             <label>
-                              <span>Дата</span>
+                              <span>Date</span>
                               <input
                                 required
                                 type="date"
@@ -168,7 +168,7 @@ function HistoryContent({
                               />
                             </label>
                             <fieldset className="foodTypeToggle">
-                              <legend>Тип</legend>
+                              <legend>Type</legend>
                               <label>
                                 <input
                                   checked={editDraft.mealType === "meal"}
@@ -177,7 +177,7 @@ function HistoryContent({
                                   value="meal"
                                   onChange={() => onChangeDraft({ ...editDraft, mealType: "meal" })}
                                 />
-                                <span>Прийом їжі</span>
+                                <span>Meal</span>
                               </label>
                               <label>
                                 <input
@@ -187,12 +187,12 @@ function HistoryContent({
                                   value="snack"
                                   onChange={() => onChangeDraft({ ...editDraft, mealType: "snack" })}
                                 />
-                                <span>Перекус</span>
+                                <span>Snack</span>
                               </label>
                             </fieldset>
                             <div className="foodEditGrid">
                               <label>
-                                <span>Ккал</span>
+                                <span>kcal</span>
                                 <input
                                   min="0"
                                   required
@@ -202,7 +202,7 @@ function HistoryContent({
                                 />
                               </label>
                               <label>
-                                <span>Б</span>
+                                <span>P</span>
                                 <input
                                   min="0"
                                   required
@@ -212,7 +212,7 @@ function HistoryContent({
                                 />
                               </label>
                               <label>
-                                <span>Ж</span>
+                                <span>F</span>
                                 <input
                                   min="0"
                                   required
@@ -222,7 +222,7 @@ function HistoryContent({
                                 />
                               </label>
                               <label>
-                                <span>В</span>
+                                <span>C</span>
                                 <input
                                   min="0"
                                   required
@@ -238,42 +238,42 @@ function HistoryContent({
                             <div className="foodTitleRow">
                               <strong>{item.name}</strong>
                               <span className={`foodTypeBadge ${item.mealType}`}>
-                                {item.mealType === "snack" ? "перекус" : "прийом їжі"}
+                                {item.mealType === "snack" ? "snack" : "meal"}
                               </span>
                             </div>
                             <p>
-                              {item.kcal} ккал · Б {item.protein} · Ж {item.fat} · В {item.carbs}
+                              {item.kcal} kcal · P {item.protein} · F {item.fat} · C {item.carbs}
                             </p>
                           </>
                         )}
                       </div>
 
-                      <div className="foodActions" aria-label={`Дії для ${item.name}`}>
+                      <div className="foodActions" aria-label={`Actions for ${item.name}`}>
                         {isEditing ? (
                           <>
                             <button disabled={isPending} onClick={() => onSaveEdit(item.id)} type="button">
-                              {isPending ? "Збереження…" : "Зберегти"}
+                              {isPending ? "Saving…" : "Save"}
                             </button>
                             <button disabled={isPending} onClick={onCancelEdit} type="button">
-                              Скасувати
+                              Cancel
                             </button>
                           </>
                         ) : isDeleting ? (
                           <>
                             <button disabled={isPending} onClick={() => onConfirmDelete(item.id)} type="button">
-                              {isPending ? "Видалення…" : "Підтвердити"}
+                              {isPending ? "Deleting…" : "Confirm"}
                             </button>
                             <button disabled={isPending} onClick={onCancelDelete} type="button">
-                              Скасувати
+                              Cancel
                             </button>
                           </>
                         ) : (
                           <>
                             <button disabled={Boolean(pendingId)} onClick={() => onStartEdit(item)} type="button">
-                              Редагувати
+                              Edit
                             </button>
                             <button disabled={Boolean(pendingId)} onClick={() => onAskDelete(item.id)} type="button">
-                              Видалити
+                              Delete
                             </button>
                           </>
                         )}
@@ -289,10 +289,10 @@ function HistoryContent({
         <section className="diaryDay" aria-live="polite">
           <header className="diaryDayHeader">
             <div>
-              <span>Історія</span>
-              <strong>Записів про їжу ще немає</strong>
+              <span>History</span>
+              <strong>No meals logged yet</strong>
             </div>
-            <p>0 ккал</p>
+            <p>0 kcal</p>
           </header>
         </section>
       )}
@@ -304,7 +304,7 @@ function HistorySkeleton() {
   return (
     <>
       <h1 className="srOnly" id="history-title">
-        Завантаження історії
+        Loading history
       </h1>
       <section className="diaryHero" aria-hidden="true">
         <div>
@@ -381,7 +381,7 @@ export default function HistoryClient() {
     });
 
     if (!response.ok) {
-      throw new Error("Не вдалося завантажити історію");
+      throw new Error("Could not load history");
     }
 
     return (await response.json()) as HistoryData;
@@ -470,13 +470,13 @@ export default function HistoryClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Не вдалося зберегти запис про їжу");
+        throw new Error("Could not save the meal entry");
       }
 
       setEditingId("");
       await reloadHistory();
     } catch {
-      setActionError("Не вдалося зберегти цей запис про їжу.");
+      setActionError("Could not save this meal entry.");
     } finally {
       setPendingId("");
     }
@@ -500,13 +500,13 @@ export default function HistoryClient() {
       });
 
       if (!response.ok) {
-        throw new Error("Не вдалося видалити запис про їжу");
+        throw new Error("Could not delete the meal entry");
       }
 
       setDeletingId("");
       await reloadHistory();
     } catch {
-      setActionError("Не вдалося видалити цей запис про їжу.");
+      setActionError("Could not delete this meal entry.");
     } finally {
       setPendingId("");
     }
@@ -520,8 +520,8 @@ export default function HistoryClient() {
             <span className="brandMark">C</span>
             <span>CalBot</span>
           </a>
-          <nav className="dashboardNav" aria-label="Навігація історією">
-            <a href="/">← Назад</a>
+          <nav className="dashboardNav" aria-label="History navigation">
+            <a href="/">← Back</a>
           </nav>
         </header>
 
@@ -553,20 +553,20 @@ export default function HistoryClient() {
           <section className="diaryDay" aria-live="polite">
             <header className="diaryDayHeader">
               <div>
-                <span>Історія</span>
-                <strong id="history-title">Історія недоступна</strong>
+                <span>History</span>
+                <strong id="history-title">History unavailable</strong>
               </div>
-              <p>0 ккал</p>
+              <p>0 kcal</p>
             </header>
             <div className="dayFoodList">
-              <p>Відкрийте цю сторінку в Telegram, щоб завантажити свою історію.</p>
+              <p>Open this page in Telegram to load your history.</p>
             </div>
           </section>
         )}
 
-        <section className="quickActions statsActions" aria-label="Дії з історією">
+        <section className="quickActions statsActions" aria-label="History actions">
           <a className="quickAction" href="/">
-            ← Назад
+            ← Back
           </a>
         </section>
       </section>

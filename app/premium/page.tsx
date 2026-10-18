@@ -3,7 +3,7 @@ import PremiumCheckout from "./PremiumCheckout";
 
 export const metadata: Metadata = {
   title: "CalBot Premium",
-  description: "Оформіть підписку CalBot Premium через Paddle."
+  description: "Subscribe to CalBot Premium through Paddle."
 };
 
 export default function PremiumPage() {

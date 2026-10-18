@@ -142,7 +142,7 @@ export default function SupportButton() {
     <>
       <button className="supportTrigger" onClick={openSupport} type="button">
         <MessageIcon />
-        <span>Написати в підтримку</span>
+        <span>Contact support</span>
       </button>
 
       {isOpen ? (
@@ -157,10 +157,10 @@ export default function SupportButton() {
             <div className="supportDialogHeader">
               <div>
                 <p>CalBot</p>
-                <h2 id="support-title">Написати в підтримку</h2>
+                <h2 id="support-title">Contact support</h2>
               </div>
               <button
-                aria-label="Закрити"
+                aria-label="Close"
                 disabled={status === "sending"}
                 onClick={closeSupport}
                 type="button"
@@ -172,15 +172,15 @@ export default function SupportButton() {
             {status === "sent" ? (
               <div className="supportSuccess">
                 <span aria-hidden="true">✓</span>
-                <strong>Повідомлення надіслано</strong>
-                <p>Ми отримали ваше звернення. Дякуємо, що написали нам.</p>
+                <strong>Message sent</strong>
+                <p>We received your request. Thank you for contacting us.</p>
                 <button onClick={closeSupport} type="button">
-                  Готово
+                  Done
                 </button>
               </div>
             ) : (
               <form className="supportForm" onSubmit={handleSubmit}>
-                <label htmlFor="support-message">Опишіть питання або проблему</label>
+                <label htmlFor="support-message">Describe your question or issue</label>
                 <textarea
                   autoComplete="off"
                   id="support-message"
@@ -189,17 +189,17 @@ export default function SupportButton() {
                     setMessage(event.target.value);
                     if (status === "error") setStatus("idle");
                   }}
-                  placeholder="Наприклад: не можу додати прийом їжі…"
+                  placeholder="For example: I cannot add a meal…"
                   ref={textareaRef}
                   rows={5}
                   value={message}
                 />
                 <div className="supportFormMeta">
                   <span>{message.length}/{MAX_MESSAGE_LENGTH}</span>
-                  {status === "error" ? <p>Не вдалося надіслати. Спробуйте ще раз.</p> : null}
+                  {status === "error" ? <p>Could not send. Please try again.</p> : null}
                 </div>
                 <button disabled={!message.trim() || status === "sending"} type="submit">
-                  {status === "sending" ? "Надсилаємо…" : "Надіслати повідомлення"}
+                  {status === "sending" ? "Sending…" : "Send message"}
                 </button>
               </form>
             )}

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import NotificationStatsClient from "./NotificationStatsClient";
 
 export const metadata: Metadata = {
-  title: "Статистика сповіщень — CalBot",
-  description: "Журнал дій і сповіщень, надісланих ботом CalBot.",
+  title: "Notification statistics — CalBot",
+  description: "Activity log and notifications sent by the CalBot bot.",
   robots: {
     index: false,
     follow: false

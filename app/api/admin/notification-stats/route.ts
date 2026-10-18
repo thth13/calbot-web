@@ -107,7 +107,7 @@ export async function POST(request: Request) {
   const dateTo = body?.dateTo ?? todayKey;
   if (!validDate(dateFrom) || !validDate(dateTo) || dateFrom > dateTo ||
       (Date.parse(dateTo) - Date.parse(dateFrom)) / 86400000 > 365) {
-    return NextResponse.json({ error: "Оберіть коректний період до 366 днів." }, { status: 400 });
+    return NextResponse.json({ error: "Select a valid period of up to 366 days." }, { status: 400 });
   }
   const filter: Document = {
     createdAt: { $gte: dateStart(dateFrom), $lt: dateStart(nextDate(dateTo)) }
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
               {
                 $and: [
                   { $eq: ["$type", "section_view"] },
-                  { $eq: ["$label", "Низ сторінки"] }
+                  { $in: ["$label", ["Низ сторінки", "Bottom of page"]] }
                 ]
               },
               "bottom",
@@ -182,11 +182,11 @@ export async function POST(request: Request) {
             {
               $project: {
                 type: 1,
-                path: { $literal: "Telegram-бот" },
+                path: { $literal: "Telegram bot" },
                 label: {
                   $ifNull: [
                     { $concat: ["@", "$username"] },
-                    { $ifNull: ["$firstName", "Користувач Telegram"] }
+                    { $ifNull: ["$firstName", "Telegram user"] }
                   ]
                 },
                 visitorId: { $toString: "$telegramId" },

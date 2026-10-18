@@ -59,20 +59,20 @@ declare global {
 const macroMeta = {
   protein: {
     icon: "🥩",
-    label: "Білки",
-    unit: "г",
+    label: "Protein",
+    unit: "g",
     color: "#d7664f"
   },
   fat: {
     icon: "🥑",
-    label: "Жири",
-    unit: "г",
+    label: "Fat",
+    unit: "g",
     color: "#5aa469"
   },
   carbs: {
     icon: "🍚",
-    label: "Вуглеводи",
-    unit: "г",
+    label: "Carbs",
+    unit: "g",
     color: "#c89432"
   }
 } as const;
@@ -191,7 +191,7 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
         return;
       }
 
-      reject(new Error("Не вдалося створити зображення для поширення"));
+      reject(new Error("Could not create the image for sharing"));
     }, "image/png");
   });
 }
@@ -206,7 +206,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   const context = canvas.getContext("2d");
   if (!context) {
-    throw new Error("Canvas недоступний");
+    throw new Error("Canvas is unavailable");
   }
 
   context.scale(scale, scale);
@@ -233,20 +233,20 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText("Калорії", 112, 372);
+  context.fillText("Calories", 112, 372);
   context.font = "850 76px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#161412";
   context.fillText(`${data.day.calories}`, 112, 468);
   context.font = "760 32px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText(`/ ${data.day.calorieTarget} ккал`, 112, 520);
+  context.fillText(`/ ${data.day.calorieTarget} kcal`, 112, 520);
 
   context.textAlign = "right";
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
-  context.fillText("Залишилося", 968, 372);
+  context.fillText("Remaining", 968, 372);
   context.font = "850 48px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#5aa469";
-  context.fillText(`${Math.max(data.day.calorieTarget - data.day.calories, 0)} ккал`, 968, 442);
+  context.fillText(`${Math.max(data.day.calorieTarget - data.day.calories, 0)} kcal`, 968, 442);
   context.textAlign = "left";
 
   drawProgress(context, 112, 548, 856, 22, percent(data.day.calories, data.day.calorieTarget), "#161412");
@@ -287,7 +287,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
   context.font = "760 30px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#756f66";
-  context.fillText("Остання додана страва", 112, 1015);
+  context.fillText("Latest meal", 112, 1015);
   context.font = "850 42px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#161412";
   context.fillText(data.day.lastFood.slice(0, 34), 112, 1080);
@@ -301,7 +301,7 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
   context.font = "800 28px system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
   context.fillStyle = "#ffffff";
   context.textAlign = "center";
-  context.fillText(`${data.day.meals} прийомів їжі відстежено з CalBot`, width / 2, 1252);
+  context.fillText(`${data.day.meals} ${data.day.meals === 1 ? "meal" : "meals"} tracked with CalBot`, width / 2, 1252);
   context.textAlign = "left";
 
   const blob = await canvasToBlob(canvas);
@@ -310,11 +310,11 @@ async function createDashboardShareFile(data: DashboardData, userTitle: string) 
 
 function getDisplayName(user?: TelegramUser) {
   if (!user) {
-    return "Ваш день";
+    return "Your day";
   }
 
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
-  return fullName || (user.username ? `@${user.username}` : "Ваш день");
+  return fullName || (user.username ? `@${user.username}` : "Your day");
 }
 
 function waitForTelegramWebApp(timeoutMs = 1500) {
@@ -351,7 +351,7 @@ function LandingAction({ placement }: { placement: "hero" | "footer" }) {
         target="_blank"
         rel="noreferrer"
       >
-        Спробувати безкоштовно
+        Try for free
       </a>
     </div>
   );
@@ -361,20 +361,20 @@ function Landing() {
   return (
     <main className="landingPage" id="top">
       <header className="landingNav">
-        <a className="brand" href="#top" aria-label="CalBot — на початок сторінки">
+        <a className="brand" href="#top" aria-label="CalBot — back to top">
           <span className="brandMark">C</span>
           <span>CalBot</span>
         </a>
-        <span className="landingTag">Щоденник харчування у Telegram</span>
+        <span className="landingTag">Your food diary in Telegram</span>
       </header>
 
       <section className="landingHero" aria-labelledby="landing-title">
         <div className="landingCopy">
-          <p className="landingEyebrow">Ваш обід. Одне фото. Калорії та БЖВ.</p>
-          <h1 id="landing-title">Рахуйте калорії за фото, <span>а не вручну</span></h1>
+          <p className="landingEyebrow">Your meal. One photo. Calories and macros.</p>
+          <h1 id="landing-title">Count calories from a photo, <span>without manual logging</span></h1>
           <p className="landingLead">
-            Надішліть фото страви в Telegram — CalBot оцінить калорії та БЖВ
-            і збереже прийом їжі у щоденнику.
+            Send a meal photo in Telegram — CalBot estimates calories and macros
+            and saves the meal to your diary.
           </p>
           <LandingAction placement="hero" />
         </div>
@@ -382,81 +382,81 @@ function Landing() {
           <div className="landingExamplePhone">
             <img
               src="/phone-main.webp"
-              alt="Приклад відповіді CalBot на фото обіду: приблизно 500 ккал, 25 г білків, 20 г жирів та 50 г вуглеводів. Результат можна редагувати."
+              alt="Example of a CalBot reply to a meal photo: about 500 kcal, 25 g protein, 20 g fat and 50 g carbs. You can edit the result."
               width="853"
               height="1844"
               fetchPriority="high"
             />
           </div>
-          <figcaption>Реальний приклад аналізу страви в CalBot</figcaption>
+          <figcaption>A real example of meal analysis in CalBot</figcaption>
         </figure>
       </section>
 
       <section className="landingSection" aria-labelledby="landing-steps-title">
-        <p className="landingEyebrow">Як почати</p>
-        <h2 id="landing-steps-title">Від фото до запису у щоденнику</h2>
+        <p className="landingEyebrow">Getting started</p>
+        <h2 id="landing-steps-title">From photo to diary entry</h2>
         <ol className="landingSteps">
-          <li><h3>Відкрийте CalBot</h3><p>Натисніть «Старт» у Telegram і пройдіть початкове налаштування.</p></li>
-          <li><h3>Надішліть фото страви</h3><p>Сфотографуйте свій сніданок, обід чи вечерю й надішліть фото боту.</p></li>
-          <li><h3>Отримайте оцінку калорій</h3><p>CalBot покаже калорії та БЖВ і додасть страву до вашого щоденника.</p></li>
+          <li><h3>Open CalBot</h3><p>Tap Start in Telegram and complete the initial setup.</p></li>
+          <li><h3>Send a meal photo</h3><p>Take a photo of your breakfast, lunch or dinner and send it to the bot.</p></li>
+          <li><h3>Get a calorie estimate</h3><p>CalBot shows calories and macros and adds the meal to your diary.</p></li>
         </ol>
       </section>
 
       <section className="landingSection landingProgress" aria-labelledby="landing-progress-title">
         <div className="landingSectionCopy">
-          <p className="landingEyebrow">Не лише один прийом їжі</p>
-          <h2 id="landing-progress-title">Бачте свій день цілком</h2>
-          <p>Скільки вже зʼїли, скільки залишилося до денної цілі та як змінюється харчування протягом тижня — в одному місці.</p>
-          <p>Повертайтеся до історії страв і стежте за калоріями, білками, жирами та вуглеводами.</p>
+          <p className="landingEyebrow">Beyond a single meal</p>
+          <h2 id="landing-progress-title">See your whole day</h2>
+          <p>See how much you have eaten, how much is left toward your daily goal and how your nutrition changes throughout the week — all in one place.</p>
+          <p>Review your meal history and track calories, protein, fat and carbs.</p>
         </div>
         <div className="landingProgressExamples">
           <figure>
-            <img src="/phone-profile.webp" alt="Денний підсумок CalBot: калорії, БЖВ і залишок до цілі" width="852" height="1847" loading="lazy" />
-            <figcaption>Ваш день</figcaption>
+            <img src="/phone-profile.webp" alt="CalBot daily summary: calories, macros and remaining daily allowance" width="852" height="1847" loading="lazy" />
+            <figcaption>Your day</figcaption>
           </figure>
           <figure>
-            <img src="/phone-stats.webp" alt="Графік калорій та БЖВ за тиждень у CalBot" width="852" height="1846" loading="lazy" />
-            <figcaption>Ваш тиждень</figcaption>
+            <img src="/phone-stats.webp" alt="Weekly calorie and macro chart in CalBot" width="852" height="1846" loading="lazy" />
+            <figcaption>Your week</figcaption>
           </figure>
         </div>
       </section>
 
       <section className="landingSection landingFaq" aria-labelledby="landing-faq-title">
         <div>
-          <p className="landingEyebrow">Перед першою стравою</p>
-          <h2 id="landing-faq-title">Коротко про головне</h2>
+          <p className="landingEyebrow">Before your first meal</p>
+          <h2 id="landing-faq-title">Frequently asked questions</h2>
         </div>
         <div className="landingQuestions">
           <details open>
-            <summary>Наскільки точний аналіз за фото?</summary>
-            <p>CalBot дає приблизну оцінку. За фото не завжди можна визначити точну вагу порції, кількість олії чи всі інгредієнти. Перевіряйте результат і за потреби редагуйте запис.</p>
+            <summary>How accurate is photo analysis?</summary>
+            <p>CalBot provides an estimate. A photo cannot always reveal the exact portion weight, amount of oil or every ingredient. Check the result and edit the entry if needed.</p>
           </details>
           <details>
-            <summary>Чи можна виправити результат?</summary>
-            <p>Так. У відповіді бота є кнопка «Редагувати», щоб ви могли скоригувати запис про страву.</p>
+            <summary>Can I correct the result?</summary>
+            <p>Yes. Use the Edit button in the bot reply to adjust your meal entry.</p>
           </details>
           <details>
-            <summary>Що буде після 14 безкоштовних днів?</summary>
-            <p>Перші 14 днів — безкоштовний пробний період. Для подальшого сканування страв потрібен Premium. Актуальні тарифи доступні на <a href="/premium">сторінці Premium</a>.</p>
+            <summary>What happens after the 14 free days?</summary>
+            <p>The first 14 days are a free trial. Premium is required to keep scanning meals afterward. See current plans on the <a href="/premium">Premium page</a>.</p>
           </details>
           <details>
-            <summary>Потрібно встановлювати окремий застосунок?</summary>
-            <p>Якщо у вас уже є Telegram, нічого додатково встановлювати не потрібно. Відкрийте CalBot, натисніть «Старт» і дотримуйтеся підказок бота.</p>
+            <summary>Do I need to install another app?</summary>
+            <p>If you already have Telegram, there is nothing else to install. Open CalBot, tap Start and follow the bot instructions.</p>
           </details>
         </div>
       </section>
 
       <section className="landingClosing" aria-labelledby="landing-closing-title">
-        <p className="landingEyebrow">Почніть зі свого наступного обіду</p>
-        <h2 id="landing-closing-title">Спробуйте на своїй страві</h2>
-        <p>Подивіться, як виглядає ваш прийом їжі в калоріях та БЖВ.</p>
+        <p className="landingEyebrow">Start with your next meal</p>
+        <h2 id="landing-closing-title">Try it with your own meal</h2>
+        <p>See the calories and macros in your meal.</p>
         <LandingAction placement="footer" />
       </section>
       <footer className="landingFooter">
         <a className="brand" href="#top">CalBot</a>
-        <nav aria-label="Інформація про сервіс">
-          <a href="/terms">Умови користування</a>
-          <a href="/privacy">Конфіденційність</a>
+        <nav aria-label="Service information">
+          <a href="/terms">Terms of Service</a>
+          <a href="/privacy">Privacy</a>
         </nav>
       </footer>
     </main>
@@ -523,12 +523,12 @@ function Dashboard({
           const errorBody = (await response.json().catch(() => undefined)) as
             | { detail?: string; error?: string }
             | undefined;
-          throw new Error(errorBody?.detail || errorBody?.error || "Не вдалося поширити в Telegram");
+          throw new Error(errorBody?.detail || errorBody?.error || "Could not share to Telegram");
         }
 
         const body = (await response.json()) as { preparedMessageId?: string };
         if (!body.preparedMessageId) {
-          throw new Error("Підготовлене повідомлення Telegram відсутнє");
+          throw new Error("The prepared Telegram message is missing");
         }
 
         const wasSent = await new Promise<boolean>((resolve) => {
@@ -551,7 +551,7 @@ function Dashboard({
       const shareData = {
         files: [file],
         title: `CalBot ${day.title.toLowerCase()}`,
-        text: `Мій CalBot — ${day.title.toLowerCase()}`
+        text: `My CalBot — ${day.title.toLowerCase()}`
       };
 
       if (navigator.canShare?.(shareData) && navigator.share) {
@@ -587,11 +587,11 @@ function Dashboard({
             <span>CalBot</span>
           </a>
           <button
-            aria-label="Поділитися дашбордом"
+            aria-label="Share dashboard"
             className="dashboardShareButton"
             disabled={shareStatus === "sharing"}
             onClick={handleShare}
-            title="Поділитися"
+            title="Share"
             type="button"
           >
             <ShareIcon />
@@ -600,9 +600,9 @@ function Dashboard({
 
         <div className="dashboardHero">
           <div>
-            <div className="daySwitcher" aria-label="Вибрати день дашборда">
+            <div className="daySwitcher" aria-label="Select dashboard day">
               <button
-                aria-label="Попередній день"
+                aria-label="Previous day"
                 disabled={isLoading}
                 onClick={() => onDateChange(shiftDateKey(selectedDate, -1))}
                 type="button"
@@ -611,7 +611,7 @@ function Dashboard({
               </button>
               <p className="eyebrow">{day.title}</p>
               <button
-                aria-label="Наступний день"
+                aria-label="Next day"
                 disabled={isLoading || !canGoForward}
                 onClick={() => onDateChange(shiftDateKey(selectedDate, 1))}
                 type="button"
@@ -621,9 +621,9 @@ function Dashboard({
             </div>
             <h1 id="dashboard-title">{userTitle}</h1>
           </div>
-          <div className="mealCounter" aria-label="Кількість прийомів їжі">
+          <div className="mealCounter" aria-label="Meal count">
             <strong>{day.meals}</strong>
-            <span>прийомів їжі</span>
+            <span>{day.meals === 1 ? "meal" : "meals"}</span>
           </div>
         </div>
 
@@ -631,37 +631,37 @@ function Dashboard({
           className={`caloriePanel${calorieGoalReached ? " isGoalReached" : ""}${
             calorieOverLimit ? " isOverLimit" : ""
           }`}
-          aria-label={`Калорії за ${day.title}`}
+          aria-label={`Calories for ${day.title}`}
         >
           <div className="calorieSummary">
             <div>
-              <span>🔥 Калорії</span>
+              <span>🔥 Calories</span>
               <strong>
-                {day.calories} / {day.calorieTarget} ккал
+                {day.calories} / {day.calorieTarget} kcal
               </strong>
             </div>
             <div>
-              <span>{calorieGoalReached ? "Статус цілі" : "Залишилося"}</span>
+              <span>{calorieGoalReached ? "Goal status" : "Remaining"}</span>
               <strong
                 className={
                   calorieOverLimit ? "statusBadge overLimitText" : calorieGoalReached ? "goalReachedText" : undefined
                 }
               >
                 {calorieOverLimit
-                  ? `Перевищено на ${calorieOverAmount} ккал`
+                  ? `Over by ${calorieOverAmount} kcal`
                   : calorieGoalReached
-                    ? "Цілі досягнуто"
-                    : `${caloriesLeft} ккал`}
+                    ? "Goal reached"
+                    : `${caloriesLeft} kcal`}
               </strong>
             </div>
           </div>
 
-          <div className="progressTrack" aria-label={`Ціль калорій виконано на ${calorieProgress}%`}>
+          <div className="progressTrack" aria-label={`Calorie goal progress: ${calorieProgress}%`}>
             <span style={{ width: `${calorieProgress}%` }} />
           </div>
         </section>
 
-        <section className="macroGrid" aria-label="Білки, жири та вуглеводи">
+        <section className="macroGrid" aria-label="Protein, fat and carbs">
           {data.macros.map((macro) => {
             const meta = macroMeta[macro.id];
             const macroProgress = percent(macro.current, macro.target);
@@ -685,14 +685,14 @@ function Dashboard({
                 </p>
                 {macroOverLimit ? (
                   <p className="goalReachedBadge overLimitText">
-                    Перевищено на {macroOverAmount} {meta.unit}
+                    Over by {macroOverAmount} {meta.unit}
                   </p>
                 ) : macroGoalReached ? (
-                  <p className="goalReachedBadge">Цілі досягнуто</p>
+                  <p className="goalReachedBadge">Goal reached</p>
                 ) : null}
                 <div
                   className="progressTrack compactTrack"
-                  aria-label={`${meta.label}: ціль виконано на ${macroProgress}%`}
+                  aria-label={`${meta.label}: goal progress: ${macroProgress}%`}
                 >
                   <span style={{ width: `${macroProgress}%`, background: meta.color }} />
                 </div>
@@ -701,39 +701,39 @@ function Dashboard({
           })}
         </section>
 
-        <section className="lastFoodPanel" aria-label="Остання додана страва">
-          <span>Остання додана страва</span>
+        <section className="lastFoodPanel" aria-label="Latest meal">
+          <span>Latest meal</span>
           <strong>{day.lastFood}</strong>
           <p>{day.lastFoodTime}</p>
         </section>
 
-        <section className="quickActions" aria-label="Швидкі дії">
+        <section className="quickActions" aria-label="Quick actions">
           <a className="quickAction" href="/stats">
-            Статистика
+            Statistics
           </a>
           <a className="quickAction" href="/history">
-            Історія
+            History
           </a>
         </section>
 
         {lastAction ? (
-          <p className="dashboardHint">Дію надіслано: {lastAction}</p>
+          <p className="dashboardHint">Action sent: {lastAction}</p>
         ) : null}
         {isLoading ? (
-          <p className="dashboardHint">Завантаження даних за {selectedDate}…</p>
+          <p className="dashboardHint">Loading data for {selectedDate}…</p>
         ) : null}
         {error ? (
           <p className="dashboardHint errorHint">{error}</p>
         ) : null}
         {shareStatus === "saved" ? (
-          <p className="dashboardHint">Зображення збережено. Надішліть його в Telegram або Instagram.</p>
+          <p className="dashboardHint">Image saved. Share it on Telegram or Instagram.</p>
         ) : null}
         {shareStatus === "sent" ? (
-          <p className="dashboardHint">Надіслано у ваш чат Telegram.</p>
+          <p className="dashboardHint">Sent to your Telegram chat.</p>
         ) : null}
         {shareStatus === "error" ? (
           <p className="dashboardHint errorHint">
-            {shareError || "Не вдалося надіслати в Telegram."}
+            {shareError || "Could not send to Telegram."}
           </p>
         ) : null}
       </section>
@@ -759,7 +759,7 @@ export default function Home() {
     });
 
     if (!response.ok) {
-      throw new Error("Не вдалося завантажити дашборд");
+      throw new Error("Could not load the dashboard");
     }
 
     return (await response.json()) as DashboardData;
@@ -826,14 +826,14 @@ export default function Home() {
       setDashboardData(await loadDashboardData(initData, nextDate));
     } catch {
       setSelectedDate(previousDate);
-      setDashboardError("Не вдалося завантажити дані за цей день.");
+      setDashboardError("Could not load data for this day.");
     } finally {
       setIsDashboardLoading(false);
     }
   }
 
   if (view === "checking") {
-    return <main className="routeLoader landingDashboardLoader" role="status">Завантажуємо ваш день…</main>;
+    return <main className="routeLoader landingDashboardLoader" role="status">Loading your day…</main>;
   }
 
   if (view === "dashboard" && dashboardData) {

@@ -28,7 +28,7 @@ type ActivityEvent = {
 const eventTitles = {
   visit: "👋 New visit",
   click: "🤖 Telegram bot button clicked",
-  section_view: "📜 Доскролили до «Бачте свій день цілком»"
+  section_view: "📜 Scrolled to “See your whole day”"
 } as const;
 
 const requestLog = new Map<string, number[]>();
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
 
   const message = [
     type === "section_view" && body?.target === "page_bottom"
-      ? "📜 Доскролили до низу сторінки"
+      ? "📜 Scrolled to the bottom of the page"
       : eventTitles[type],
     `📄 Page: ${path}`,
     type === "click" ? `🎯 Action: ${label ?? "Unnamed action"}` : undefined,

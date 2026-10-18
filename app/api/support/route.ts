@@ -112,10 +112,10 @@ export async function POST(request: Request) {
   }
 
   const notification = [
-    "💬 Нове повідомлення в підтримку",
-    `👤 Користувач: ${getUserTitle(user)}`,
+    "💬 New support message",
+    `👤 User: ${getUserTitle(user)}`,
     `🆔 Telegram ID: ${user.id}`,
-    `📄 Сторінка: ${path}`,
+    `📄 Page: ${path}`,
     "",
     message
   ].join("\n");

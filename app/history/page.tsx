@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import HistoryClient from "./HistoryClient";
 
 export const metadata: Metadata = {
-  title: "Історія харчування — CalBot",
-  description: "Історія харчування CalBot, згрупована за днями та часом."
+  title: "Meal history — CalBot",
+  description: "CalBot meal history, grouped by day and time."
 };
 
 export default function HistoryPage() {

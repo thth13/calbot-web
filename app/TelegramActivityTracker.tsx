@@ -157,7 +157,7 @@ export default function TelegramActivityTracker() {
         sendActivity({
           type: "section_view",
           path: getCurrentPath(),
-          label: "Низ сторінки",
+          label: "Bottom of page",
           visitorId: visitorIdRef.current,
           target: "page_bottom"
         });
@@ -176,7 +176,7 @@ export default function TelegramActivityTracker() {
       sendActivity({
         type: "section_view",
         path: getCurrentPath(),
-        label: "Бачте свій день цілком",
+        label: "See your whole day",
         visitorId: visitorIdRef.current,
         target: "daily_progress"
       });

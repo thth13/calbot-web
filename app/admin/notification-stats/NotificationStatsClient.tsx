@@ -46,22 +46,22 @@ type StatsData = {
 };
 
 const eventLabels: Record<EventType, string> = {
-  visit: "Відвідування",
-  click: "Натискання",
-  bottom: "До кінця",
-  section_view: "До блоку «Бачте свій день цілком»",
-  bot_started: "Запуск бота",
-  quiz_completed: "Квіз пройдено"
+  visit: "Visits",
+  click: "Clicks",
+  bottom: "Reached bottom",
+  section_view: "Reached “See your whole day”",
+  bot_started: "Bot started",
+  quiz_completed: "Quiz completed"
 };
 
 const statusLabels: Record<DeliveryStatus, string> = {
-  pending: "Надсилається",
-  sent: "Доставлено",
-  failed: "Помилка"
+  pending: "Sending",
+  sent: "Delivered",
+  failed: "Failed"
 };
 
 function formatDate(value: string, timeZone: string) {
-  return new Intl.DateTimeFormat("uk-UA", {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone,
     dateStyle: "short",
     timeStyle: "medium"
@@ -83,8 +83,8 @@ function getVisitorLabel(item: ActivityEvent) {
 
 function getSourceLabel(source: ActivityEvent["activitySource"]) {
   if (source === "telegram_webapp") return "Telegram WebApp";
-  if (source === "telegram_bot") return "Telegram-бот";
-  return "Браузер";
+  if (source === "telegram_bot") return "Telegram bot";
+  return "Browser";
 }
 
 function getEventKey(item: Pick<ActivityEvent, "id" | "source">) {
@@ -108,7 +108,7 @@ function calendarRange(anchor: string, period: "week" | "month", offset = 0) {
 }
 
 function calendarLabel(value: string, options: Intl.DateTimeFormatOptions = { day: "numeric", month: "long", year: "numeric" }) {
-  return new Intl.DateTimeFormat("uk-UA", { ...options, timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
+  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 }
 
 export default function NotificationStatsClient({ timeZone }: { timeZone: string }) {
@@ -227,7 +227,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   function applyDates(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!fromInput || !toInput || fromInput > toInput || Date.parse(toInput) - Date.parse(fromInput) > 365 * 86400000) {
-      setDateError("Оберіть початкову й кінцеву дати: період має бути від 1 до 366 днів.");
+      setDateError("Select a start and end date: the period must be between 1 and 366 days.");
       return;
     }
     setJournalRange({ from: fromInput, to: toInput });
@@ -288,7 +288,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
   async function deleteSelectedEvents() {
     const selected = Object.values(selectedItems);
     if (selected.length === 0) return;
-    if (!window.confirm(`Видалити вибрані події (${selected.length})?`)) return;
+    if (!window.confirm(`Delete selected events (${selected.length})?`)) return;
 
     const allCurrentPageSelected = Boolean(
       data?.events.length && data.events.every((item) => selectedItems[getEventKey(item)])
@@ -304,7 +304,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
       });
 
       if (!response.ok) {
-        window.alert("Не вдалося видалити вибрані події.");
+        window.alert("Could not delete the selected events.");
         return;
       }
 
@@ -315,14 +315,14 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
         setReloadKey((value) => value + 1);
       }
     } catch {
-      window.alert("Не вдалося видалити вибрані події.");
+      window.alert("Could not delete the selected events.");
     } finally {
       setDeletingSelected(false);
     }
   }
 
   async function deleteEvent(item: ActivityEvent) {
-    if (!window.confirm(`Видалити подію «${eventLabels[item.type]}»?`)) return;
+    if (!window.confirm(`Delete event “${eventLabels[item.type]}”?`)) return;
 
     setDeletingId(item.id);
     try {
@@ -333,7 +333,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
       });
 
       if (!response.ok) {
-        window.alert("Не вдалося видалити подію.");
+        window.alert("Could not delete the event.");
         return;
       }
 
@@ -349,15 +349,15 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
         setReloadKey((value) => value + 1);
       }
     } catch {
-      window.alert("Не вдалося видалити подію.");
+      window.alert("Could not delete the event.");
     } finally {
       setDeletingId("");
     }
   }
 
   const emptyMessage = journalRange || query || eventType !== "all" || activitySource !== "all"
-    ? "За вибраними фільтрами подій немає."
-    : "Події з’являться після першої дії відвідувача.";
+    ? "No events match the selected filters."
+    : "Events will appear after the first visitor action.";
 
   return (
     <main className="adminStatsPage">
@@ -371,38 +371,38 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
 
 
         {data && status === "ready" ? (
-          <section className="adminSummary" aria-label="Зведена статистика">
-            <article><span>За вибраний період</span><strong>{data.summary.total}</strong></article>
-            <article><span>Сьогодні в періоді</span><strong>{data.summary.today}</strong></article>
-            <article><span>За останні 7 днів у періоді</span><strong>{data.summary.lastSevenDays}</strong></article>
-            <article><span>Відвідувачі</span><strong>{data.summary.uniqueVisitors}</strong></article>
+          <section className="adminSummary" aria-label="Summary statistics">
+            <article><span>Selected period</span><strong>{data.summary.total}</strong></article>
+            <article><span>Today within period</span><strong>{data.summary.today}</strong></article>
+            <article><span>Last 7 days within period</span><strong>{data.summary.lastSevenDays}</strong></article>
+            <article><span>Visitors</span><strong>{data.summary.uniqueVisitors}</strong></article>
           </section>
         ) : null}
 
-        <section className="adminActivityPanel adminDailyPanel" aria-label="Події за днями" aria-busy={chartStatus === "loading"}>
-          <div className="adminChartHeader"><h2>Події за днями</h2>
+        <section className="adminActivityPanel adminDailyPanel" aria-label="Daily events" aria-busy={chartStatus === "loading"}>
+          <div className="adminChartHeader"><h2>Daily events</h2>
           <div className="adminFilters">
             {(["week", "month"] as const).map((mode) => (
               <button key={mode} type="button" aria-pressed={period === mode} disabled={!range}
                 onClick={() => range && changeRange(calendarRange(range.from, mode), mode)}>
-                {mode === "week" ? "Тиждень" : "Місяць"}
+                {mode === "week" ? "Week" : "Month"}
               </button>
             ))}
           </div>
           {range && <div className="adminPeriodNav">
-            <button type="button" aria-label="Попередній період"
+            <button type="button" aria-label="Previous period"
               onClick={() => changeRange(calendarRange(range.from, period, -1), period)}>←</button>
             <strong>{period === "month" ? calendarLabel(range.from, { month: "long", year: "numeric" }) : `${calendarLabel(range.from, { day: "numeric", month: "short" })} — ${calendarLabel(range.to)}`}</strong>
-            <button type="button" aria-label="Наступний період"
+            <button type="button" aria-label="Next period"
               onClick={() => changeRange(calendarRange(range.from, period, 1), period)}>→</button>
           </div>}
 </div>
-          {chartStatus === "loading" ? <div className="adminState" role="status">Завантаження…</div> : chartStatus === "error" ?
-            <div className="adminState" role="alert">Не вдалося завантажити дані. <button type="button" onClick={() => setChartReloadKey((value) => value + 1)}>Повторити</button></div> : chartData ? <>
-            <p>{chartData.days.reduce((total, day) => total + day.count, 0) === 0 ? "За вибраний період подій немає." : `Усього за період: ${chartData.days.reduce((total, day) => total + day.count, 0)}`}</p>
-            <div className="adminDailyScroll" tabIndex={0} aria-label="Графік за днями, прокрутіть для перегляду всіх дат">
+          {chartStatus === "loading" ? <div className="adminState" role="status">Loading…</div> : chartStatus === "error" ?
+            <div className="adminState" role="alert">Could not load data. <button type="button" onClick={() => setChartReloadKey((value) => value + 1)}>Retry</button></div> : chartData ? <>
+            <p>{chartData.days.reduce((total, day) => total + day.count, 0) === 0 ? "No events in the selected period." : `Total for period: ${chartData.days.reduce((total, day) => total + day.count, 0)}`}</p>
+            <div className="adminDailyScroll" tabIndex={0} aria-label="Daily chart, scroll to view all dates">
               <div className="adminDailyChart" style={{ gridTemplateColumns: `repeat(${chartData.days.length}, minmax(34px, 1fr))` }}>
-                {chartData.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} подій`}>
+                {chartData.days.map((day) => <div className="adminDailyDay" key={day.date} aria-label={`${calendarLabel(day.date)}: ${day.count} events`}>
                   <div className="adminDailyTrack"><span style={{ height: `${day.count / Math.max(1, ...chartData.days.map((item) => item.count)) * 100}%` }} /></div>
                   <strong>{day.count}</strong>
                   <span>{calendarLabel(day.date, { day: "2-digit", month: "2-digit" })}</span>
@@ -416,35 +416,35 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
         <section className="adminActivityPanel" aria-live="polite">
           <div className="adminActivityHeader">
             <div>
-              <h2>Журнал дій</h2>
+              <h2>Activity log</h2>
               {data && status === "ready" ? (
                 <p>
-                  Відвідування: {data.summary.byType.visit ?? 0} · Натискання: {data.summary.byType.click ?? 0} · До кінця: {data.summary.byType.bottom ?? 0} · Запуски бота: {data.summary.byType.bot_started ?? 0} · Квізи: {data.summary.byType.quiz_completed ?? 0}
+                  Visits: {data.summary.byType.visit ?? 0} · Clicks: {data.summary.byType.click ?? 0} · Reached bottom: {data.summary.byType.bottom ?? 0} · Bot starts: {data.summary.byType.bot_started ?? 0} · Quizzes: {data.summary.byType.quiz_completed ?? 0}
                 </p>
               ) : null}
             </div>
             <form className="adminSearch" onSubmit={applySearch} noValidate>
               <input
-                aria-label="Пошук у журналі"
+                aria-label="Search activity log"
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Сторінка, користувач, IP…"
+                placeholder="Page, user, IP…"
                 type="search"
                 value={searchInput}
               />
-              <button type="submit">Знайти</button>
+              <button type="submit">Search</button>
             </form>
           </div>
 
           <div className="adminJournalDates">
           <form className="adminDateFilters" onSubmit={applyDates} noValidate>
-            <label>Від<input type="date" value={fromInput} max={toInput || undefined} onChange={(event) => setFromInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
-            <label>До<input type="date" value={toInput} min={fromInput || undefined} onChange={(event) => setToInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
-            <button type="submit">Застосувати дати</button>
+            <label>From<input type="date" value={fromInput} max={toInput || undefined} onChange={(event) => setFromInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <label>To<input type="date" value={toInput} min={fromInput || undefined} onChange={(event) => setToInput(event.target.value)} aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "admin-date-error" : undefined} /></label>
+            <button type="submit">Apply dates</button>
           </form>
           {dateError && <p id="admin-date-error" role="alert">{dateError}</p>}
           </div>
 
-          <div className="adminFilters" aria-label="Фільтр типу події">
+          <div className="adminFilters" aria-label="Event type filter">
             {(["all", "visit", "click", "bottom", "section_view", "bot_started", "quiz_completed"] as const).map((value) => (
               <button
                 aria-pressed={eventType === value}
@@ -452,11 +452,11 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                 onClick={() => changeType(value)}
                 type="button"
               >
-                {value === "all" ? "Усі" : eventLabels[value]}
+                {value === "all" ? "All" : eventLabels[value]}
               </button>
             ))}
           </div>
-          <div className="adminFilters" aria-label="Фільтр середовища">
+          <div className="adminFilters" aria-label="Source filter">
             {(["all", "browser", "telegram_webapp", "telegram_bot"] as const).map((value) => (
               <button
                 aria-pressed={activitySource === value}
@@ -464,31 +464,31 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                 onClick={() => changeSource(value)}
                 type="button"
               >
-                {value === "all" ? "Усі середовища" : getSourceLabel(value)}
+                {value === "all" ? "All sources" : getSourceLabel(value)}
               </button>
             ))}
           </div>
 
           {Object.keys(selectedItems).length > 0 ? (
             <div className="adminSelectionToolbar">
-              <span>Вибрано: {Object.keys(selectedItems).length}</span>
+              <span>Selected: {Object.keys(selectedItems).length}</span>
               <button
                 disabled={deletingSelected}
                 onClick={() => void deleteSelectedEvents()}
                 type="button"
               >
-                {deletingSelected ? "Видалення…" : "Видалити вибрані"}
+                {deletingSelected ? "Deleting…" : "Delete selected"}
               </button>
             </div>
           ) : null}
 
           {status === "error" ? (
             <div className="adminState adminStateError">
-              <strong>Не вдалося завантажити статистику</strong>
-              <p>Перевірте підключення до бази та повторіть спробу.</p>
+              <strong>Could not load statistics</strong>
+              <p>Check the database connection and try again.</p>
             </div>
           ) : status === "loading" && !data ? (
-            <div className="adminState"><strong>Завантаження…</strong></div>
+            <div className="adminState"><strong>Loading…</strong></div>
           ) : data && data.events.length === 0 ? (
             <div className="adminState"><strong>{emptyMessage}</strong></div>
           ) : data ? (
@@ -499,21 +499,21 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                     <tr>
                       <th className="adminSelectCell">
                         <input
-                          aria-label="Вибрати всі події на сторінці"
+                          aria-label="Select all events on this page"
                           checked={data.events.length > 0 && data.events.every((item) => selectedItems[getEventKey(item)])}
                           disabled={deletingSelected || status === "loading"}
                           onChange={toggleCurrentPage}
                           type="checkbox"
                         />
                       </th>
-                      <th>Час</th>
-                      <th>Подія</th>
-                      <th>Середовище</th>
-                      <th>Сторінка / дія</th>
-                      <th>Відвідувач</th>
+                      <th>Time</th>
+                      <th>Event</th>
+                      <th>Source</th>
+                      <th>Page / action</th>
+                      <th>Visitor</th>
                       <th>IP</th>
-                      <th>Надсилання</th>
-                      <th aria-label="Дії" />
+                      <th>Delivery</th>
+                      <th aria-label="Actions" />
                     </tr>
                   </thead>
                   <tbody>
@@ -524,7 +524,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                       >
                         <td className="adminSelectCell">
                           <input
-                            aria-label={`Вибрати подію «${eventLabels[item.type]}»`}
+                            aria-label={`Select event “${eventLabels[item.type]}”`}
                             checked={Boolean(selectedItems[getEventKey(item)])}
                             disabled={deletingSelected}
                             onChange={() => toggleItem(item)}
@@ -536,7 +536,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                         <td>{getSourceLabel(item.activitySource)}</td>
                         <td className="adminActionCell">
                           <strong>{item.path}</strong>
-                          {item.label ? <span>{item.label}</span> : item.referrer ? <span>з {item.referrer}</span> : null}
+                          {item.label ? <span>{item.label}</span> : item.referrer ? <span>from {item.referrer}</span> : null}
                         </td>
                         <td title={String(item.telegramUserId ?? item.visitorId)}>{getVisitorLabel(item)}</td>
                         <td>{item.ip}</td>
@@ -554,7 +554,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
                             onClick={() => void deleteEvent(item)}
                             type="button"
                           >
-                            {deletingId === item.id ? "Видалення…" : "Видалити"}
+                            {deletingId === item.id ? "Deleting…" : "Delete"}
                           </button>
                         </td>
                       </tr>
@@ -564,7 +564,7 @@ export default function NotificationStatsClient({ timeZone }: { timeZone: string
               </div>
 
               <div className="adminPagination">
-                <span>{data.pagination.total} подій · сторінка {data.pagination.page} з {data.pagination.pages}</span>
+                <span>{data.pagination.total} events · page {data.pagination.page} of {data.pagination.pages}</span>
                 <div>
                   <button disabled={page <= 1 || status === "loading"} onClick={() => setPage((value) => value - 1)} type="button">←</button>
                   <button disabled={page >= data.pagination.pages || status === "loading"} onClick={() => setPage((value) => value + 1)} type="button">→</button>

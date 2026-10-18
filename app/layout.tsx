@@ -6,13 +6,13 @@ import TelegramActivityTracker from "./TelegramActivityTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CalBot — калорії за фото у Telegram",
+  title: "CalBot — calories from photos in Telegram",
   description:
-    "Надішліть фото страви — CalBot оцінить калорії та БЖВ і збереже прийом їжі у щоденнику. Спробуйте 14 днів безкоштовно.",
+    "Send a meal photo — CalBot estimates calories and macros and saves the meal to your diary. Try it free for 14 days.",
   openGraph: {
-    title: "CalBot — калорії за фото у Telegram",
+    title: "CalBot — calories from photos in Telegram",
     description:
-      "Сфотографуйте їжу в Telegram, і CalBot оцінить калорії, білки, жири та вуглеводи.",
+      "Share a food photo in Telegram and CalBot estimates calories, protein, fat and carbs.",
     type: "website"
   }
 };
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="uk" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
       </head>

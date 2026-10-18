@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import StatsClient from "./StatsClient";
 
 export const metadata: Metadata = {
-  title: "Статистика — CalBot",
-  description: "Динаміка калорій, досягнення цілей, серії та тижневі порівняння в CalBot."
+  title: "Statistics — CalBot",
+  description: "Calorie trends, goal achievement, streaks and weekly comparisons in CalBot."
 };
 
 export default function StatsPage() {
