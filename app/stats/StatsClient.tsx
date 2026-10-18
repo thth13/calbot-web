@@ -81,7 +81,7 @@ function StatsContent({
   onNextWeek: () => void;
 }) {
   const average7 = data.averageCards[0]?.value ?? 0;
-  const inTarget = data.rangeCards[0]?.value ?? "0 / 7";
+  const inTarget = data.calorieDays.filter((day) => day.status === "in-range").length;
 
   return (
     <>
